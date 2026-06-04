@@ -492,7 +492,7 @@ function buildAllFilters(){
   ALL.domaine=[...new Set(allData.map(r=>r[COL.domaine]).filter(Boolean))].sort();
   ALL.sdomaine=[...new Set(allData.map(r=>r[COL.sousDomaine]).filter(Boolean))].sort();
   ALL.formation=[...new Set(allData.map(r=>r[COL.titre]).filter(Boolean))].sort();
-  ALL.qualif=[...new Set(allData.map(r=>r[COL.qualif]).filter(v=>v&&v!=='')).].sort();
+  ALL.qualif=[...new Set(allData.map(r=>r[COL.qualif]).filter(v=>v&&v!=='')].sort();
   ALL.annee=[...new Set(allData.map(r=>String(r[COL.annee]||'')).filter(Boolean))].sort();
   Object.keys(ALL).forEach(k=>buildDD('d-'+k,k,ALL[k],SEL[k],()=>{cascadeFilters(k);applyFilters();}));
   initMagSearch();
