@@ -55,7 +55,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 .loading-text{font-size:14px;color:var(--text2)}
 .page{display:none}.page.active{display:block}
 .metrics-section{margin-bottom:20px}
-.metrics-section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;display:flex;align-items:center;gap:6px;padding-left:2px}
+.metrics-section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
 .metric-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:14px 16px;position:relative;overflow:hidden}
 .metric-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--blue)}
@@ -147,7 +147,7 @@ input[type=checkbox].row-cb{accent-color:var(--blue);width:14px;height:14px;curs
 .chart-box{position:relative;width:100%}
 .empty{text-align:center;padding:40px;color:var(--text3)}
 .empty i{font-size:40px;opacity:.3;display:block;margin-bottom:12px}
-.info-box{background:var(--blue-light);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--blue-mid);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.info-box{background:var(--blue-light);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--blue-mid);margin-bottom:12px;display:flex;align-items:flex-start;gap:6px;line-height:1.6}
 .warn-box{background:var(--amber-light);border-radius:8px;padding:8px 12px;font-size:12px;color:#854F0B;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .sel-actions{display:flex;gap:8px;margin-bottom:8px;align-items:center;font-size:12px;color:var(--text3);flex-wrap:wrap}
 @media(max-width:900px){
@@ -217,26 +217,33 @@ input[type=checkbox].row-cb{accent-color:var(--blue);width:14px;height:14px;curs
       <button class="btn" onclick="resetFilters()" style="margin-left:auto"><i class="ti ti-refresh"></i> Reset tout</button>
     </div>
     <div class="chips-row" id="allChips"></div><div class="page active" id="page-dashboard">
-      <div class="info-box"><i class="ti ti-info-circle"></i><span>
-        Présents* = Présent + Présent partiel + cases vides (col AB) dont date &lt; date d'édition · 
-        Prévus = cases vides (col AB) dont date ≥ date d'édition + statut Validée (col C) dont date ≥ date d'édition
-      </span></div>
+      <div class="info-box"><i class="ti ti-info-circle" style="flex-shrink:0"></i><div>
+        <strong>Règles de qualification (col AB + col C + Date de fin) :</strong><br>
+        • Statut session = Annulée → <strong>Annulé</strong> (priorité absolue)<br>
+        • Qualification = Présent / Présent partiel → <strong>Réalisé</strong><br>
+        • Qualification = Absent → <strong>Absent</strong><br>
+        • Qualification = Annulé → <strong>Annulé</strong><br>
+        • Qualification vide + (Clôturée/En cours/Validée) + date fin ≤ aujourd'hui → <strong>Réalisé</strong><br>
+        • Qualification vide + date fin &gt; aujourd'hui → <strong>Inscrit</strong>
+      </div></div>
+
       <div class="metrics-section">
         <div class="metrics-section-title"><i class="ti ti-calendar" style="font-size:14px"></i> Sessions (col. A &amp; C)</div>
         <div class="metrics-grid" id="metricsSessionsRow"></div>
       </div>
       <div class="metrics-section">
-        <div class="metrics-section-title"><i class="ti ti-users" style="font-size:14px"></i> Stagiaires (col. V &amp; AB)</div>
+        <div class="metrics-section-title"><i class="ti ti-users" style="font-size:14px"></i> Stagiaires (col. V, AB &amp; date fin)</div>
         <div class="metrics-grid" id="metricsStagiairesRow"></div>
       </div>
+
       <div class="two-col">
         <div>
           <div class="card" style="margin-bottom:16px"><div class="card-header"><div class="card-title">Évolution mensuelle</div></div><div class="chart-box" style="height:230px"><canvas id="chartMensuel"></canvas></div></div>
-          <div class="card"><div class="card-header"><div class="card-title">Répartition par domaine (sessions effectuées)</div></div><div id="dashDomaines"></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Répartition par domaine (Réalisés)</div></div><div id="dashDomaines"></div></div>
         </div>
         <div>
-          <div class="card" style="margin-bottom:16px"><div class="card-header"><div class="card-title">Statut des sessions</div></div><div class="chart-box" style="height:160px"><canvas id="chartStatut"></canvas></div><div id="statutLegend" style="margin-top:8px"></div></div>
-          <div class="card"><div class="card-header"><div class="card-title">Présence stagiaires</div></div><div class="chart-box" style="height:140px"><canvas id="chartQualif"></canvas></div><div id="qualifLegend" style="margin-top:8px"></div></div>
+          <div class="card" style="margin-bottom:16px"><div class="card-header"><div class="card-title">Statut des sessions (col C)</div></div><div class="chart-box" style="height:160px"><canvas id="chartStatut"></canvas></div><div id="statutLegend" style="margin-top:8px"></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Qualification stagiaires</div></div><div class="chart-box" style="height:140px"><canvas id="chartQualif"></canvas></div><div id="qualifLegend" style="margin-top:8px"></div></div>
         </div>
       </div>
     </div>
@@ -254,11 +261,12 @@ input[type=checkbox].row-cb{accent-color:var(--blue);width:14px;height:14px;curs
           <div class="fiche-metrics" id="ficheMetricsStag"></div>
         </div>
         <div class="tabs" id="ficheTabs">
-          <div class="tab active" onclick="switchFicheTab('sessions')"><i class="ti ti-calendar"></i> Sessions effectuées <span id="cnt-sess" class="badge badge-green" style="margin-left:2px"></span></div>
-          <div class="tab" onclick="switchFicheTab('prevues')"><i class="ti ti-calendar-event"></i> Sessions prévues <span id="cnt-prev" class="badge badge-amber" style="margin-left:2px"></span></div>
+          <div class="tab active" onclick="switchFicheTab('sessions')"><i class="ti ti-calendar"></i> Sessions <span id="cnt-sess" class="badge badge-green" style="margin-left:2px"></span></div>
+          <div class="tab" onclick="switchFicheTab('inscrits')"><i class="ti ti-calendar-event"></i> Inscrits <span id="cnt-inscrit" class="badge badge-teal" style="margin-left:2px"></span></div>
           <div class="tab" onclick="switchFicheTab('stagiaires')"><i class="ti ti-users"></i> Stagiaires <span id="cnt-stag" class="badge badge-blue" style="margin-left:2px"></span></div>
-          <div class="tab" onclick="switchFicheTab('sans-statut')"><i class="ti ti-question-mark"></i> Sans statut <span id="cnt-ss" class="badge badge-purple" style="margin-left:2px"></span></div>
+          <div class="tab" onclick="switchFicheTab('annules')"><i class="ti ti-x"></i> Annulés <span id="cnt-ann" class="badge badge-red" style="margin-left:2px"></span></div>
         </div>
+
         <div id="fiche-tab-sessions" class="tab-pane active">
           <div class="sel-actions">
             <input type="checkbox" id="cbAllSess" onchange="toggleAllCb('sessTable',this.checked)" style="accent-color:var(--blue);width:14px;height:14px;cursor:pointer">
@@ -266,23 +274,24 @@ input[type=checkbox].row-cb{accent-color:var(--blue);width:14px;height:14px;curs
             <button class="btn btn-green" style="font-size:11px;padding:4px 10px" onclick="exportSelectedXLSX('sessTable','sessions')"><i class="ti ti-file-spreadsheet"></i> Exporter sélection</button>
           </div>
           <div class="tbl-wrap"><table id="sessTable">
-            <thead><tr><th class="cb-col"></th><th>Formation</th><th>Domaine</th><th>Date</th><th>Statut</th><th>Inscrits</th><th>Présents*</th><th>Absents</th><th>Annulés (AB)</th><th>Sans statut passé</th><th>Durée (H)</th></tr></thead>
+            <thead><tr><th class="cb-col"></th><th>Formation</th><th>Domaine</th><th>Date début</th><th>Date fin</th><th>Statut session</th><th>Inscrits</th><th>Réalisés</th><th>Absents</th><th>Annulés</th><th>Durée (H)</th></tr></thead>
             <tbody></tbody>
           </table></div>
-          <div style="font-size:10px;color:var(--text3);margin-top:6px">* Présents = Présent + Présent partiel + cases vides (col AB) dont date &lt; date d'édition</div>
         </div>
-        <div id="fiche-tab-prevues" class="tab-pane">
+
+        <div id="fiche-tab-inscrits" class="tab-pane">
           <div class="sel-actions">
-            <input type="checkbox" id="cbAllPrev" onchange="toggleAllCb('prevTable',this.checked)" style="accent-color:var(--blue);width:14px;height:14px;cursor:pointer">
-            <strong id="selCountPrev">0</strong> sélectionnée(s)
-            <button class="btn btn-green" style="font-size:11px;padding:4px 10px" onclick="exportSelectedXLSX('prevTable','prevues')"><i class="ti ti-file-spreadsheet"></i> Exporter sélection</button>
+            <input type="checkbox" id="cbAllIns" onchange="toggleAllCb('insTable',this.checked)" style="accent-color:var(--blue);width:14px;height:14px;cursor:pointer">
+            <strong id="selCountIns">0</strong> sélectionnée(s)
+            <button class="btn btn-green" style="font-size:11px;padding:4px 10px" onclick="exportSelectedXLSX('insTable','inscrits')"><i class="ti ti-file-spreadsheet"></i> Exporter sélection</button>
           </div>
-          <div class="tbl-wrap"><table id="prevTable">
-            <thead><tr><th class="cb-col"></th><th>Formation</th><th>Domaine</th><th>Date prévue</th><th>Dans</th><th>Statut session</th><th>Stagiaires prévus</th></tr></thead>
+          <div class="tbl-wrap"><table id="insTable">
+            <thead><tr><th class="cb-col"></th><th>Formation</th><th>Domaine</th><th>Date début</th><th>Date fin</th><th>Dans</th><th>Statut session</th><th>Nb inscrits</th></tr></thead>
             <tbody></tbody>
           </table></div>
-          <div style="font-size:10px;color:var(--text3);margin-top:6px">Sessions prévues = cases vides (col AB) + statut Validée (col C) dont date ≥ date d'édition</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:6px">Inscrits = Qualification vide (col AB) + date fin &gt; aujourd'hui</div>
         </div>
+
         <div id="fiche-tab-stagiaires" class="tab-pane">
           <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap">
             <input type="text" id="searchStagFiche" placeholder="Rechercher un stagiaire..." style="flex:1;min-width:180px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font)">
@@ -291,17 +300,19 @@ input[type=checkbox].row-cb{accent-color:var(--blue);width:14px;height:14px;curs
             <button class="btn btn-green" style="font-size:11px;padding:4px 10px" onclick="exportSelectedXLSX('stagTable','stagiaires')"><i class="ti ti-file-spreadsheet"></i> Exporter sélection</button>
           </div>
           <div class="tbl-wrap"><table id="stagTable">
-            <thead><tr><th class="cb-col"></th><th>Matricule</th><th>Nom</th><th>Prénom</th><th>CSP</th><th>Présence</th><th>Sessions réalisées</th><th>Sessions prévues</th><th>Durée (H)</th></tr></thead>
+            <thead><tr><th class="cb-col"></th><th>Matricule</th><th>Nom</th><th>Prénom</th><th>CSP</th><th>Qualification</th><th>Réalisés</th><th>Inscrits</th><th>Durée (H)</th></tr></thead>
             <tbody></tbody>
           </table></div>
         </div>
-        <div id="fiche-tab-sans-statut" class="tab-pane">
-          <div class="warn-box"><i class="ti ti-alert-triangle"></i> Lignes sans statut (col AB vide) dont la date est passée — à qualifier.</div>
-          <div class="tbl-wrap"><table id="ssTable">
-            <thead><tr><th>Matricule</th><th>Nom</th><th>Prénom</th><th>CSP</th><th>Formation</th><th>Date</th><th>Statut session</th></tr></thead>
+
+        <div id="fiche-tab-annules" class="tab-pane">
+          <div class="warn-box"><i class="ti ti-alert-triangle"></i> Sessions annulées (col C = Annulée) ou stagiaires annulés (col AB = Annulé).</div>
+          <div class="tbl-wrap"><table id="annTable">
+            <thead><tr><th>Matricule</th><th>Nom</th><th>Prénom</th><th>CSP</th><th>Formation</th><th>Date début</th><th>Statut session</th><th>Qualification</th></tr></thead>
             <tbody></tbody>
           </table></div>
         </div>
+
         <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
           <button class="btn" onclick="exportFicheCSV()"><i class="ti ti-file-text"></i> CSV</button>
           <button class="btn btn-green" onclick="exportFicheXLSX()"><i class="ti ti-file-spreadsheet"></i> Excel complet</button>
@@ -311,38 +322,44 @@ input[type=checkbox].row-cb{accent-color:var(--blue);width:14px;height:14px;curs
     </div>
 
     <div class="page" id="page-formations">
-      <div class="card" style="margin-bottom:16px"><div class="card-header"><div class="card-title">Top formations (stagiaires présents)</div></div><div id="topFormationsProgress"></div></div>
+      <div class="card" style="margin-bottom:16px"><div class="card-header"><div class="card-title">Top formations (Réalisés)</div></div><div id="topFormationsProgress"></div></div>
       <div class="card"><div class="card-header"><div class="card-title">Toutes les formations</div></div>
         <div class="tbl-wrap"><table id="tableFormations">
-          <thead><tr><th>#</th><th>Formation</th><th>Domaine</th><th>Sous-domaine</th><th>Sessions effectuées</th><th>Sessions prévues</th><th>Stagiaires formés</th><th>Présents*</th><th>Absents</th><th>Annulés</th><th>Sans statut passé</th></tr></thead>
+          <thead><tr><th>#</th><th>Formation</th><th>Domaine</th><th>Sous-domaine</th><th>Sessions</th><th>Réalisés</th><th>Inscrits</th><th>Absents</th><th>Annulés</th></tr></thead>
           <tbody></tbody>
         </table></div>
-        <div style="font-size:10px;color:var(--text3);margin-top:6px;padding:0 4px">* Présents = Présent + Présent partiel + cases vides (col AB) dont date &lt; date d'édition</div>
       </div>
     </div>
 
     <div class="page" id="page-stagiaires">
       <div class="tabs" style="margin-bottom:16px">
         <div class="tab active" onclick="switchStagTab('tous')">Tous les stagiaires</div>
-        <div class="tab" onclick="switchStagTab('sans-statut')"><i class="ti ti-question-mark" style="font-size:12px"></i> Sans statut passé <span id="cnt-ss-global" class="badge badge-purple" style="margin-left:2px"></span></div>
+        <div class="tab" onclick="switchStagTab('inscrits')"><i class="ti ti-calendar-event" style="font-size:12px"></i> Inscrits <span id="cnt-inscrit-global" class="badge badge-teal" style="margin-left:2px"></span></div>
+        <div class="tab" onclick="switchStagTab('annules')"><i class="ti ti-x" style="font-size:12px"></i> Annulés <span id="cnt-ann-global" class="badge badge-red" style="margin-left:2px"></span></div>
       </div>
       <div id="stag-tab-tous">
         <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap">
           <div class="search-wrap" style="flex:1;margin-bottom:0;min-width:200px"><i class="ti ti-user-search search-ico"></i><input type="text" class="search-input" id="searchStagGlobal" placeholder="Rechercher nom, prénom, matricule ou magasin..." autocomplete="off"></div>
           <input type="checkbox" id="cbAllStagGlobal" onchange="toggleAllCb('tableStagiaires',this.checked)" style="accent-color:var(--blue);width:14px;height:14px;cursor:pointer">
           <strong id="selCountStagGlobal">0</strong> sél.
-          <button class="btn btn-green" onclick="exportSelectedXLSX('tableStagiaires','stagiaires_selection')"><i class="ti ti-file-spreadsheet"></i> Exporter sélection</button>
+          <button class="btn btn-green" onclick="exportSelectedXLSX('tableStagiaires','stagiaires_selection')"><i class="ti ti-file-spreadsheet"></i> Sélection Excel</button>
           <button class="btn btn-green" onclick="exportStagGlobalXLSX()"><i class="ti ti-file-spreadsheet"></i> Tout Excel</button>
         </div>
         <div class="card"><div class="tbl-wrap"><table id="tableStagiaires">
-          <thead><tr><th class="cb-col"></th><th>Matricule</th><th>Nom</th><th>Prénom</th><th>CSP</th><th>Magasin</th><th>Catégorie</th><th>Territoire</th><th>Présence</th><th>Formé</th><th>Prévu</th><th>Durée (H)</th></tr></thead>
+          <thead><tr><th class="cb-col"></th><th>Matricule</th><th>Nom</th><th>Prénom</th><th>CSP</th><th>Magasin</th><th>Catégorie</th><th>Territoire</th><th>Qualification</th><th>Réalisés</th><th>Inscrits</th><th>Durée (H)</th></tr></thead>
           <tbody></tbody>
         </table></div></div>
       </div>
-      <div id="stag-tab-sans-statut" style="display:none">
-        <div class="warn-box" style="margin-bottom:12px"><i class="ti ti-alert-triangle"></i> Lignes sans statut (col AB vide) dont la date est passée — à qualifier.</div>
-        <div class="card"><div class="tbl-wrap"><table id="tableSansStatut">
-          <thead><tr><th>Matricule</th><th>Nom</th><th>Prénom</th><th>CSP</th><th>Magasin</th><th>Catégorie</th><th>Formation</th><th>Date session</th><th>Statut session</th></tr></thead>
+      <div id="stag-tab-inscrits" style="display:none">
+        <div class="card"><div class="tbl-wrap"><table id="tableInscrits">
+          <thead><tr><th>Matricule</th><th>Nom</th><th>Prénom</th><th>CSP</th><th>Magasin</th><th>Catégorie</th><th>Formation</th><th>Date fin</th><th>Statut session</th></tr></thead>
+          <tbody></tbody>
+        </table></div></div>
+      </div>
+      <div id="stag-tab-annules" style="display:none">
+        <div class="warn-box" style="margin-bottom:12px"><i class="ti ti-alert-triangle"></i> Stagiaires annulés (col AB = Annulé) ou sessions annulées (col C = Annulée).</div>
+        <div class="card"><div class="tbl-wrap"><table id="tableAnnules">
+          <thead><tr><th>Matricule</th><th>Nom</th><th>Prénom</th><th>CSP</th><th>Magasin</th><th>Catégorie</th><th>Formation</th><th>Date début</th><th>Statut session</th><th>Qualification</th></tr></thead>
           <tbody></tbody>
         </table></div></div>
       </div>
@@ -351,7 +368,7 @@ input[type=checkbox].row-cb{accent-color:var(--blue);width:14px;height:14px;curs
 </div>
 
 <script>
-const COL={session:'N° de session',titre:'Titre Formation',statut:'Statut session',dateDebut:'Date de début',annee:'Année date début',mois:'Mois date début',domaine:'Domaine Formation',sousDomaine:'Sous domaine formation',client:'Client',categorie:'Catégorie Client',matricule:'Matricule Stagiaire',nom:'Nom Stagiaire',prenom:'Prénom Stagiaire',csp:'CSP Stagiaire',duree:'Durée réalisée (H.)',qualif:'Qualification'};
+const COL={session:'N° de session',titre:'Titre Formation',statut:'Statut session',dateDebut:'Date de début',dateFin:'Date de fin',annee:'Année date début',mois:'Mois date début',domaine:'Domaine Formation',sousDomaine:'Sous domaine formation',client:'Client',categorie:'Catégorie Client',matricule:'Matricule Stagiaire',nom:'Nom Stagiaire',prenom:'Prénom Stagiaire',csp:'CSP Stagiaire',duree:'Durée réalisée (H.)',qualif:'Qualification'};
 const TODAY=new Date();TODAY.setHours(0,0,0,0);
 const TODAYSTR=TODAY.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 const CHIP_COLORS={dt:'chip-teal',region:'chip-teal',categorie:'chip-blue',client:'chip-purple',domaine:'chip-blue',sdomaine:'chip-blue',formation:'chip-blue'};
@@ -362,36 +379,38 @@ const charts={};
 const SEL={dt:new Set(),region:new Set(),categorie:new Set(),client:new Set(),domaine:new Set(),sdomaine:new Set(),formation:new Set()};
 const ALL={dt:[],region:[],categorie:[],client:[],domaine:[],sdomaine:[],formation:[]};
 
-// ===== LOGIQUE MÉTIER =====
-// Sessions (col C)
+// ===== RÈGLES MÉTIER =====
+// Qualification d'une ligne (priorité dans l'ordre)
+function getQualif(r){
+  const s=r[COL.statut];
+  const q=r[COL.qualif];
+  const qStr=String(q===null||q===undefined?'':q).trim();
+  const dfin=r['_dateFin'];
+
+  // Règle 1 : Annulée (col C) → Annulé
+  if(s==='Annulée')return'Annulé';
+  // Règle 2 : Présent / Présent partiel → Réalisé
+  if(qStr==='Présent'||qStr==='Présent partiel')return'Réalisé';
+  // Règle 3 : Absent → Absent
+  if(qStr==='Absent')return'Absent';
+  // Règle 4 : Annulé (col AB) → Annulé
+  if(qStr==='Annulé')return'Annulé';
+  // Règle 5 : vide + (Clôturée/En cours/Validée) + date fin ≤ TODAY → Réalisé
+  if(qStr===''&&(s==='Clôturée'||s==='En cours de qualif.'||s==='Validée')&&dfin&&dfin<=TODAY)return'Réalisé';
+  // Règle 6 : vide + date fin > TODAY → Inscrit
+  if(qStr===''&&(!dfin||dfin>TODAY))return'Inscrit';
+  return'Autre';
+}
+
+function isRealise(r){return getQualif(r)==='Réalisé';}
+function isInscrit(r){return getQualif(r)==='Inscrit';}
+function isAbsent(r){return getQualif(r)==='Absent';}
+function isAnnule(r){return getQualif(r)==='Annulé';}
+
+// Sessions col C
 function isSessEffectuee(r){const s=r[COL.statut];return s==='Validée'||s==='Clôturée'||s==='En cours de qualif.';}
 function isSessAnnulee(r){return r[COL.statut]==='Annulée';}
 function isSessAvenir(r){const d=r['_date'];return(d&&d>=TODAY&&r[COL.statut]!=='Annulée')||r[COL.statut]==='En projet';}
-
-// Stagiaires présents (col AB + col D) :
-// Présent + Présent partiel + cases vides DONT date < TODAY
-function isPresent(r){
-  const q=String(r[COL.qualif]||'').trim();
-  const d=r['_date'];
-  if(q==='Présent'||q==='Présent partiel')return true;
-  if(q===''&&d&&d<TODAY)return true;
-  return false;
-}
-// Absent = statut Absent (col AB)
-function isAbsent(r){return String(r[COL.qualif]||'').trim()==='Absent';}
-// Annulé = statut Annulé (col AB)
-function isAnnule(r){return String(r[COL.qualif]||'').trim()==='Annulé';}
-// Sans statut PASSÉ = case vide (col AB) ET date < TODAY
-function isSansStatutPasse(r){const q=String(r[COL.qualif]||'').trim();const d=r['_date'];return q===''&&d&&d<TODAY;}
-// Prévu = case vide (col AB) ET date >= TODAY  OU  Validée (col C) ET date >= TODAY
-function isPrevu(r){
-  const q=String(r[COL.qualif]||'').trim();
-  const d=r['_date'];
-  const s=r[COL.statut];
-  if(q===''&&d&&d>=TODAY)return true;
-  if(s==='Validée'&&d&&d>=TODAY)return true;
-  return false;
-}
 
 // ===== UPLOAD =====
 document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);e.target.value='';});
@@ -407,6 +426,13 @@ document.addEventListener('drop',e=>{e.preventDefault();dragCounter=0;overlay.st
 document.getElementById('dropZone').addEventListener('dragover',e=>{e.preventDefault();e.currentTarget.classList.add('drag')});
 document.getElementById('dropZone').addEventListener('dragleave',e=>e.currentTarget.classList.remove('drag'));
 document.getElementById('dropZone').addEventListener('drop',e=>e.currentTarget.classList.remove('drag'));
+
+function parseXlDate(v){
+  if(!v&&v!==0)return null;
+  if(v instanceof Date){const d=new Date(v);d.setHours(0,0,0,0);return d;}
+  if(typeof v==='number'){const d=new Date(Math.round((v-25569)*86400000));d.setHours(0,0,0,0);return d;}
+  const d=new Date(v);if(isNaN(d))return null;d.setHours(0,0,0,0);return d;
+}
 
 function handleFile(file){
   document.getElementById('uploadPage').style.display='none';
@@ -430,13 +456,10 @@ function handleFile(file){
         const hi=raw.findIndex(r=>r.some(c=>c&&String(c).includes('session')));
         const hdr=hi>=0?raw[hi]:raw[0];
         allData=raw.slice(hi>=0?hi+1:1).map(r=>{
-          const o={};hdr.forEach((h,i)=>{if(h)o[String(h).trim()]=r[i]??''});
-          const d=o[COL.dateDebut];
-          if(d instanceof Date){o['_date']=new Date(d);}
-          else if(typeof d==='number'){o['_date']=new Date(Math.round((d-25569)*86400000));}
-          else if(d){const pd=new Date(d);o['_date']=isNaN(pd)?null:pd;}
-          else o['_date']=null;
-          if(o['_date'])o['_date'].setHours(0,0,0,0);
+          const o={};
+          hdr.forEach((h,i)=>{if(h)o[String(h).trim()]=r[i]??'';});
+          o['_date']=parseXlDate(o[COL.dateDebut]);
+          o['_dateFin']=parseXlDate(o[COL.dateFin]);
           return o;
         }).filter(r=>r[COL.session]);
         const allDates=allData.map(r=>r['_date']).filter(Boolean).sort((a,b)=>a-b);
@@ -452,7 +475,7 @@ function handleFile(file){
 }
 function setLoading(m){document.getElementById('loadingMsg').textContent=m;}
 function getInfo(c){return clientMap[c]||{dt:'',region:''};}
-function fmtDate(v){if(!v)return'—';let d=v;if(!(d instanceof Date)){if(typeof d==='number')d=new Date(Math.round((d-25569)*86400000));else d=new Date(d);}return isNaN(d)?'—':d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function fmtDate(v){if(!v)return'—';if(v instanceof Date)return v.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});return'—';}
 
 // ===== FILTRES =====
 function buildAllFilters(){
@@ -470,21 +493,21 @@ function buildAllFilters(){
 function buildDD(key){
   const dd=document.getElementById('d-'+key);if(!dd)return;dd.innerHTML='';
   const acts=document.createElement('div');acts.className='msel-actions';
-  const btnAll=document.createElement('button');btnAll.textContent='Tout sélectionner';
-  btnAll.onclick=()=>{ALL[key].forEach(v=>SEL[key].add(v));syncDD(key);renderChips();cascadeFilters(key);applyFilters();};
-  const btnNone=document.createElement('button');btnNone.textContent='Désélectionner tout';
-  btnNone.onclick=()=>{SEL[key].clear();syncDD(key);renderChips();cascadeFilters(key);applyFilters();};
-  acts.appendChild(btnAll);acts.appendChild(btnNone);dd.appendChild(acts);
+  const bAll=document.createElement('button');bAll.textContent='Tout sélectionner';
+  bAll.onclick=()=>{ALL[key].forEach(v=>SEL[key].add(v));syncDD(key);renderChips();cascadeFilters(key);applyFilters();};
+  const bNone=document.createElement('button');bNone.textContent='Désélectionner tout';
+  bNone.onclick=()=>{SEL[key].clear();syncDD(key);renderChips();cascadeFilters(key);applyFilters();};
+  acts.appendChild(bAll);acts.appendChild(bNone);dd.appendChild(acts);
   if(ALL[key].length>8){
     const inp=document.createElement('input');inp.type='text';inp.placeholder='Rechercher...';inp.className='msel-search-inp';
-    const list2=document.createElement('div');list2.className='msel-list';
-    inp.addEventListener('input',function(){const q=this.value.toLowerCase();list2.querySelectorAll('.msel-opt').forEach(el=>{el.style.display=el.dataset.val.toLowerCase().includes(q)?'flex':'none';});});
-    dd.appendChild(inp);dd.appendChild(list2);
-    ALL[key].forEach(v=>addOpt(list2,key,v));
-  } else {
-    const list2=document.createElement('div');list2.className='msel-list';
-    ALL[key].forEach(v=>addOpt(list2,key,v));
-    dd.appendChild(list2);
+    const list=document.createElement('div');list.className='msel-list';
+    inp.addEventListener('input',function(){const q=this.value.toLowerCase();list.querySelectorAll('.msel-opt').forEach(el=>{el.style.display=el.dataset.val.toLowerCase().includes(q)?'flex':'none';});});
+    dd.appendChild(inp);dd.appendChild(list);
+    ALL[key].forEach(v=>addOpt(list,key,v));
+  }else{
+    const list=document.createElement('div');list.className='msel-list';
+    ALL[key].forEach(v=>addOpt(list,key,v));
+    dd.appendChild(list);
   }
 }
 function addOpt(list,key,v){
@@ -564,7 +587,7 @@ function applyFilters(){
       &&(!use('domaine')||SEL.domaine.has(r[COL.domaine]))&&(!use('sdomaine')||SEL.sdomaine.has(r[COL.sousDomaine]))
       &&(!use('formation')||SEL.formation.has(r[COL.titre]));
   });
-  if(dfVal||dtVal){const s=dfVal?new Date(dfVal).toLocaleDateString('fr-FR'):'…';const e=dtVal?new Date(dtVal).toLocaleDateString('fr-FR'):'…';document.getElementById('dateInfo').textContent=`${filtered.length.toLocaleString('fr-FR')} lignes · ${s} → ${e}`;}
+  if(dfVal||dtVal){const s=dfVal?new Date(dfVal).toLocaleDateString('fr-FR'):'…';const e2=dtVal?new Date(dtVal).toLocaleDateString('fr-FR'):'…';document.getElementById('dateInfo').textContent=`${filtered.length.toLocaleString('fr-FR')} lignes · ${s} → ${e2}`;}
   else document.getElementById('dateInfo').textContent='';
   renderChips();renderCurrentPage();
 }
@@ -603,72 +626,60 @@ function renderMetricsSessions(){
   document.getElementById('metricsSessionsRow').innerHTML=`
     <div class="metric-card"><div class="metric-label">Total sessions</div><div class="metric-value">${sessAll.size.toLocaleString('fr-FR')}</div><div class="metric-sub">${filtered.length.toLocaleString('fr-FR')} lignes</div></div>
     <div class="metric-card green"><div class="metric-label">Sessions effectuées</div><div class="metric-value">${sessEff.size.toLocaleString('fr-FR')}</div><div class="metric-sub">Validée + Clôturée + En cours</div></div>
-    <div class="metric-card amber"><div class="metric-label">Sessions à venir</div><div class="metric-value">${sessAv.size.toLocaleString('fr-FR')}</div><div class="metric-sub">Date ≥ aujourd'hui ou En projet</div></div>
+    <div class="metric-card teal"><div class="metric-label">Sessions à venir</div><div class="metric-value">${sessAv.size.toLocaleString('fr-FR')}</div><div class="metric-sub">Date ≥ auj. ou En projet</div></div>
     <div class="metric-card red"><div class="metric-label">Sessions annulées</div><div class="metric-value">${sessAnn.size.toLocaleString('fr-FR')}</div><div class="metric-sub">Statut Annulée (col C)</div></div>`;
 }
 
 function renderMetricsStagiaires(){
-  const effRows=filtered.filter(isSessEffectuee);
-  const stagFormes=new Set(effRows.map(r=>r[COL.matricule]).filter(Boolean));
-  const stagPrevus=new Set(filtered.filter(isPrevu).map(r=>r[COL.matricule]).filter(Boolean));
-  const presents=effRows.filter(isPresent).length;
-  const absents=effRows.filter(isAbsent).length;
-  const annules=effRows.filter(isAnnule).length;
-  const ssP=effRows.filter(isSansStatutPasse).length;
+  const realises=filtered.filter(isRealise);
+  const inscrits=filtered.filter(isInscrit);
+  const absents=filtered.filter(isAbsent);
+  const annules=filtered.filter(isAnnule);
+  const stagRealises=new Set(realises.map(r=>r[COL.matricule]).filter(Boolean));
+  const stagInscrits=new Set(inscrits.map(r=>r[COL.matricule]).filter(Boolean));
   document.getElementById('metricsStagiairesRow').innerHTML=`
-    <div class="metric-card"><div class="metric-label">Stagiaires formés</div><div class="metric-value">${stagFormes.size.toLocaleString('fr-FR')}</div><div class="metric-sub">Matricules uniques (col V)</div></div>
-    <div class="metric-card teal"><div class="metric-label">Stagiaires prévus</div><div class="metric-value">${stagPrevus.size.toLocaleString('fr-FR')}</div><div class="metric-sub">Vide AB + date ≥ auj. ou Validée ≥ auj.</div></div>
-    <div class="metric-card green"><div class="metric-label">Présents*</div><div class="metric-value">${presents.toLocaleString('fr-FR')}</div><div class="metric-sub">Présent + Partiel + Vide &lt; auj.</div></div>
-    <div class="metric-card red"><div class="metric-label">Absents</div><div class="metric-value">${absents.toLocaleString('fr-FR')}</div><div class="metric-sub">Statut Absent (col AB)</div></div>
-    <div class="metric-card gray"><div class="metric-label">Annulés</div><div class="metric-value">${annules.toLocaleString('fr-FR')}</div><div class="metric-sub">Statut Annulé (col AB)</div></div>
-    <div class="metric-card purple"><div class="metric-label">Sans statut passé</div><div class="metric-value">${ssP.toLocaleString('fr-FR')}</div><div class="metric-sub">Vide AB + date &lt; auj.</div></div>`;
+    <div class="metric-card green"><div class="metric-label">Réalisés</div><div class="metric-value">${realises.length.toLocaleString('fr-FR')}</div><div class="metric-sub">${stagRealises.size} stagiaires uniques</div></div>
+    <div class="metric-card teal"><div class="metric-label">Inscrits</div><div class="metric-value">${inscrits.length.toLocaleString('fr-FR')}</div><div class="metric-sub">${stagInscrits.size} stagiaires · vide AB + date fin future</div></div>
+    <div class="metric-card red"><div class="metric-label">Absents</div><div class="metric-value">${absents.length.toLocaleString('fr-FR')}</div><div class="metric-sub">Qualification = Absent</div></div>
+    <div class="metric-card gray"><div class="metric-label">Annulés</div><div class="metric-value">${annules.length.toLocaleString('fr-FR')}</div><div class="metric-sub">Session Annulée ou Qualif Annulé</div></div>`;
 }
 
 function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 function renderMensuelChart(){
   destroyChart('mensuel');
   const byM={};
-  filtered.forEach(r=>{const a=r[COL.annee],m=r[COL.mois];if(a&&m){const k=`${a}-${String(m).padStart(2,'0')}`;if(!byM[k])byM[k]={e:0,p:0,a:0};if(isSessEffectuee(r))byM[k].e++;else if(isSessAvenir(r))byM[k].p++;else if(isSessAnnulee(r))byM[k].a++;}});
+  filtered.forEach(r=>{const a=r[COL.annee],m=r[COL.mois];if(a&&m){const k=`${a}-${String(m).padStart(2,'0')}`;if(!byM[k])byM[k]={r:0,i:0,a:0,an:0};const q=getQualif(r);if(q==='Réalisé')byM[k].r++;else if(q==='Inscrit')byM[k].i++;else if(q==='Absent')byM[k].a++;else if(q==='Annulé')byM[k].an++;}});
   const labels=Object.keys(byM).sort();
-  charts['mensuel']=new Chart(document.getElementById('chartMensuel'),{type:'bar',data:{labels,datasets:[{label:'Effectuées',data:labels.map(k=>byM[k].e),backgroundColor:'#002D72',borderRadius:3},{label:'À venir',data:labels.map(k=>byM[k].p),backgroundColor:'#F59E0B',borderRadius:3},{label:'Annulées',data:labels.map(k=>byM[k].a),backgroundColor:'#E24B4A',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},scales:{x:{ticks:{maxRotation:45,font:{size:10},autoSkip:true,maxTicksLimit:14}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}});
+  charts['mensuel']=new Chart(document.getElementById('chartMensuel'),{type:'bar',data:{labels,datasets:[{label:'Réalisés',data:labels.map(k=>byM[k].r),backgroundColor:'#002D72',borderRadius:3},{label:'Inscrits',data:labels.map(k=>byM[k].i),backgroundColor:'#0891B2',borderRadius:3},{label:'Absents',data:labels.map(k=>byM[k].a),backgroundColor:'#EF9F27',borderRadius:3},{label:'Annulés',data:labels.map(k=>byM[k].an),backgroundColor:'#E24B4A',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},scales:{x:{ticks:{maxRotation:45,font:{size:10},autoSkip:true,maxTicksLimit:14}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}});
 }
 function renderStatutChart(){
   destroyChart('statut');
   const eff=new Set(filtered.filter(isSessEffectuee).map(r=>r[COL.session])).size;
   const av=new Set(filtered.filter(isSessAvenir).map(r=>r[COL.session])).size;
   const ann=new Set(filtered.filter(isSessAnnulee).map(r=>r[COL.session])).size;
-  const labels=['Effectuées','À venir','Annulées'],vals=[eff,av,ann],colors=['#1D9E75','#F59E0B','#E24B4A'];
+  const labels=['Effectuées','À venir','Annulées'],vals=[eff,av,ann],colors=['#1D9E75','#0891B2','#E24B4A'];
   charts['statut']=new Chart(document.getElementById('chartStatut'),{type:'doughnut',data:{labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
   const total=vals.reduce((a,b)=>a+b,0)||1;
   document.getElementById('statutLegend').innerHTML=labels.map((l,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:2px 0"><span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:2px;background:${colors[i]};display:inline-block"></span>${l}</span><span style="font-weight:600;font-family:var(--mono)">${vals[i].toLocaleString('fr-FR')} (${Math.round(vals[i]/total*100)}%)</span></div>`).join('');
 }
 function renderQualifChart(){
   destroyChart('qualif');
-  const effRows=filtered.filter(isSessEffectuee);
-  const p=effRows.filter(isPresent).length,a=effRows.filter(isAbsent).length,an=effRows.filter(isAnnule).length,ss=effRows.filter(isSansStatutPasse).length;
-  const labels=['Présents*','Absents','Annulés','Sans statut passé'],vals=[p,a,an,ss],colors=['#1D9E75','#E24B4A','#888780','#7C3AED'];
+  const r=filtered.filter(isRealise).length;
+  const i=filtered.filter(isInscrit).length;
+  const a=filtered.filter(isAbsent).length;
+  const an=filtered.filter(isAnnule).length;
+  const labels=['Réalisé','Inscrit','Absent','Annulé'],vals=[r,i,a,an],colors=['#1D9E75','#0891B2','#EF9F27','#888780'];
   charts['qualif']=new Chart(document.getElementById('chartQualif'),{type:'doughnut',data:{labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
   const total=vals.reduce((a,b)=>a+b,0)||1;
   document.getElementById('qualifLegend').innerHTML=labels.map((l,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:2px 0"><span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:2px;background:${colors[i]};display:inline-block"></span>${l}</span><span style="font-weight:600;font-family:var(--mono)">${vals[i].toLocaleString('fr-FR')} (${Math.round(vals[i]/total*100)}%)</span></div>`).join('');
 }
 function renderDashDomaines(){
-  const data=filtered.filter(isSessEffectuee).reduce((m,r)=>{const v=(r[COL.domaine]||'N/A').replace(/^\d+\.\s*/,'');m[v]=(m[v]||0)+1;return m;},{});
+  const data=filtered.filter(isRealise).reduce((m,r)=>{const v=(r[COL.domaine]||'N/A').replace(/^\d+\.\s*/,'');m[v]=(m[v]||0)+1;return m;},{});
   const sorted=Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,8),max=sorted[0]?.[1]||1;
   document.getElementById('dashDomaines').innerHTML=sorted.map(([l,v])=>`<div class="prog-row"><div class="prog-label" title="${l}">${l.length>26?l.slice(0,26)+'…':l}</div><div class="prog-bg"><div class="prog-fill" style="width:${Math.round(v/max*100)}%;background:var(--blue)"></div></div><div class="prog-count">${v.toLocaleString('fr-FR')}</div></div>`).join('');
 }// ===== FICHE MAGASIN =====
 function statBadge(s){const m={'Validée':'badge-green','Annulée':'badge-red','Clôturée':'badge-gray','En cours de qualif.':'badge-amber','En projet':'badge-amber','En commande':'badge-blue'};return`<span class="badge ${m[s]||'badge-gray'}">${s}</span>`;}
-
-function presenceBadge(r){
-  const q=String(r[COL.qualif]||'').trim();
-  const d=r['_date'];
-  if(isPrevu(r))return`<span class="badge badge-teal">Prévu</span>`;
-  if(q==='Absent')return`<span class="badge badge-red">Absent</span>`;
-  if(q==='Annulé')return`<span class="badge badge-gray">Annulé</span>`;
-  if(q==='Présent partiel')return`<span class="badge badge-amber">Présent partiel</span>`;
-  if(q===''&&d&&d<TODAY)return`<span class="badge badge-purple">Sans statut passé</span>`;
-  if(q==='Présent')return`<span class="badge badge-green">Présent</span>`;
-  return`<span class="badge badge-gray">${q||'—'}</span>`;
-}
+function qualifBadge(q){const m={'Réalisé':'badge-green','Inscrit':'badge-teal','Absent':'badge-amber','Annulé':'badge-red'};return`<span class="badge ${m[q]||'badge-gray'}">${q||'—'}</span>`;}
 
 let allMags=[];
 function initMagSearch(){
@@ -711,57 +722,54 @@ function renderFiche(){
   document.getElementById('ficheTags').innerHTML=tags.map(t=>`<span class="fiche-tag">${t}</span>`).join('');
   document.getElementById('ficheDate').textContent=`Fiche éditée le ${TODAYSTR}`;
 
-  // Métriques sessions
+  // Sessions métriques
   const sessEff=new Set(currentMagRows.filter(isSessEffectuee).map(r=>r[COL.session]));
   const sessAv=new Set(currentMagRows.filter(isSessAvenir).map(r=>r[COL.session]));
   const sessAnn=new Set(currentMagRows.filter(isSessAnnulee).map(r=>r[COL.session]));
   document.getElementById('ficheMetricsSess').innerHTML=`
     <div class="fiche-m green"><div class="fiche-m-label">Effectuées</div><div class="fiche-m-value">${sessEff.size}</div><div class="fiche-m-sub">Validée+Clôturée+En cours</div></div>
-    <div class="fiche-m amber"><div class="fiche-m-label">À venir</div><div class="fiche-m-value">${sessAv.size}</div><div class="fiche-m-sub">Date ≥ auj. ou En projet</div></div>
+    <div class="fiche-m teal"><div class="fiche-m-label">À venir</div><div class="fiche-m-value">${sessAv.size}</div><div class="fiche-m-sub">Date ≥ auj. ou En projet</div></div>
     <div class="fiche-m red"><div class="fiche-m-label">Annulées</div><div class="fiche-m-value">${sessAnn.size}</div></div>`;
 
-  // Métriques stagiaires
-  const effRows=currentMagRows.filter(isSessEffectuee);
-  const prevRows=currentMagRows.filter(isPrevu);
-  const stagFormes=new Set(effRows.map(r=>r[COL.matricule]).filter(Boolean));
-  const stagPrevus=new Set(prevRows.map(r=>r[COL.matricule]).filter(Boolean));
-  const presents=effRows.filter(isPresent).length;
-  const absents=effRows.filter(isAbsent).length;
-  const annules=effRows.filter(isAnnule).length;
-  const ssP=effRows.filter(isSansStatutPasse);
+  // Stagiaires métriques
+  const realises=currentMagRows.filter(isRealise);
+  const inscrits=currentMagRows.filter(isInscrit);
+  const absents=currentMagRows.filter(isAbsent);
+  const annules=currentMagRows.filter(isAnnule);
+  const stagR=new Set(realises.map(r=>r[COL.matricule]).filter(Boolean));
+  const stagI=new Set(inscrits.map(r=>r[COL.matricule]).filter(Boolean));
   document.getElementById('ficheMetricsStag').innerHTML=`
-    <div class="fiche-m"><div class="fiche-m-label">Stagiaires formés</div><div class="fiche-m-value">${stagFormes.size}</div><div class="fiche-m-sub">Matricules uniques</div></div>
-    <div class="fiche-m teal"><div class="fiche-m-label">Stagiaires prévus</div><div class="fiche-m-value">${stagPrevus.size}</div><div class="fiche-m-sub">Vide AB≥auj. ou Validée≥auj.</div></div>
-    <div class="fiche-m green"><div class="fiche-m-label">Présents*</div><div class="fiche-m-value">${presents}</div><div class="fiche-m-sub">Présent+Partiel+Vide&lt;auj.</div></div>
-    <div class="fiche-m red"><div class="fiche-m-label">Absents</div><div class="fiche-m-value">${absents}</div></div>
-    <div class="fiche-m gray"><div class="fiche-m-label">Annulés</div><div class="fiche-m-value">${annules}</div></div>
-    <div class="fiche-m purple"><div class="fiche-m-label">Sans statut passé</div><div class="fiche-m-value">${ssP.length}</div></div>`;
+    <div class="fiche-m green"><div class="fiche-m-label">Réalisés</div><div class="fiche-m-value">${realises.length}</div><div class="fiche-m-sub">${stagR.size} stagiaires uniques</div></div>
+    <div class="fiche-m teal"><div class="fiche-m-label">Inscrits</div><div class="fiche-m-value">${inscrits.length}</div><div class="fiche-m-sub">${stagI.size} stagiaires · date fin future</div></div>
+    <div class="fiche-m amber"><div class="fiche-m-label">Absents</div><div class="fiche-m-value">${absents.length}</div></div>
+    <div class="fiche-m red"><div class="fiche-m-label">Annulés</div><div class="fiche-m-value">${annules.length}</div></div>`;
 
   // Compteurs onglets
   document.getElementById('cnt-sess').textContent=sessEff.size;
-  document.getElementById('cnt-prev').textContent=sessAv.size;
-  document.getElementById('cnt-stag').textContent=stagFormes.size+stagPrevus.size;
-  document.getElementById('cnt-ss').textContent=ssP.length;
+  document.getElementById('cnt-inscrit').textContent=inscrits.length;
+  document.getElementById('cnt-stag').textContent=stagR.size+stagI.size;
+  document.getElementById('cnt-ann').textContent=annules.length;
 
   renderFicheSessions();
-  renderFichePrevues();
+  renderFicheInscrits();
   renderFicheStagiaires();
-  renderFicheSansStatut(ssP);
+  renderFicheAnnules();
   switchFicheTab('sessions');
 }
 
 function renderFicheSessions(){
-  const effRows=currentMagRows.filter(isSessEffectuee);
+  // Grouper par session, uniquement les réalisés et absents (sessions effectuées)
+  const rows=currentMagRows.filter(r=>isSessEffectuee(r)||isSessAnnulee(r));
   const sessData={};
-  effRows.forEach(r=>{
+  rows.forEach(r=>{
     const k=r[COL.session];
-    if(!sessData[k])sessData[k]={titre:r[COL.titre],domaine:(r[COL.sousDomaine]||r[COL.domaine]||'').replace(/^\d+\.\d*\s*/,''),date:r['_date'],statut:r[COL.statut],inscrits:0,presents:0,absents:0,annules:0,ssP:0,dur:0};
+    if(!sessData[k])sessData[k]={titre:r[COL.titre],domaine:(r[COL.sousDomaine]||r[COL.domaine]||'').replace(/^\d+\.\d*\s*/,''),date:r['_date'],dateFin:r['_dateFin'],statut:r[COL.statut],inscrits:0,realises:0,absents:0,annules:0,dur:0};
     sessData[k].inscrits++;
     sessData[k].dur+=parseFloat(r[COL.duree])||0;
-    if(isPresent(r))sessData[k].presents++;
-    if(isAbsent(r))sessData[k].absents++;
-    if(isAnnule(r))sessData[k].annules++;
-    if(isSansStatutPasse(r))sessData[k].ssP++;
+    const q=getQualif(r);
+    if(q==='Réalisé')sessData[k].realises++;
+    else if(q==='Absent')sessData[k].absents++;
+    else if(q==='Annulé')sessData[k].annules++;
   });
   const sorted=Object.values(sessData).sort((a,b)=>(b.date||0)-(a.date||0));
   document.querySelector('#sessTable tbody').innerHTML=sorted.length?sorted.map(s=>`<tr>
@@ -769,91 +777,104 @@ function renderFicheSessions(){
     <td class="td-name" title="${s.titre}">${s.titre.length>38?s.titre.slice(0,38)+'…':s.titre}</td>
     <td style="font-size:11px;color:var(--text2)">${s.domaine.slice(0,22)}</td>
     <td style="white-space:nowrap">${fmtDate(s.date)}</td>
+    <td style="white-space:nowrap">${fmtDate(s.dateFin)}</td>
     <td>${statBadge(s.statut)}</td>
     <td style="text-align:center">${s.inscrits}</td>
-    <td style="text-align:center;color:var(--green);font-weight:700">${s.presents}</td>
-    <td style="text-align:center;color:var(--red);font-weight:700">${s.absents}</td>
+    <td style="text-align:center;color:var(--green);font-weight:700">${s.realises}</td>
+    <td style="text-align:center;color:var(--amber);font-weight:700">${s.absents}</td>
     <td style="text-align:center;color:var(--gray);font-weight:700">${s.annules}</td>
-    <td style="text-align:center;color:#7C3AED;font-weight:700">${s.ssP}</td>
     <td style="font-family:var(--mono)">${Math.round(s.dur)}</td>
   </tr>`).join(''):`<tr><td colspan="11" style="padding:20px;text-align:center;color:var(--text3)">Aucune session effectuée</td></tr>`;
 }
 
-function renderFichePrevues(){
-  // Prévues = (col AB vide ET date >= TODAY) OU (Validée ET date >= TODAY)
-  const prevRows=currentMagRows.filter(isPrevu);
+function renderFicheInscrits(){
+  const rows=currentMagRows.filter(isInscrit);
   const sessData={};
-  prevRows.forEach(r=>{
+  rows.forEach(r=>{
     const k=r[COL.session];
-    if(!sessData[k])sessData[k]={titre:r[COL.titre],domaine:(r[COL.domaine]||'').replace(/^\d+\.\s*/,''),date:r['_date'],statut:r[COL.statut],inscrits:0};
-    sessData[k].inscrits++;
+    if(!sessData[k])sessData[k]={titre:r[COL.titre],domaine:(r[COL.domaine]||'').replace(/^\d+\.\s*/,''),date:r['_date'],dateFin:r['_dateFin'],statut:r[COL.statut],nb:0};
+    sessData[k].nb++;
   });
   const sorted=Object.values(sessData).sort((a,b)=>(a.date||0)-(b.date||0));
-  document.querySelector('#prevTable tbody').innerHTML=sorted.length?sorted.map(s=>{
-    const diff=s.date?Math.round((s.date-TODAY)/(864e5)):999;
-    const diffTxt=diff===0?'Aujourd\'hui':diff===1?'Demain':diff>0?`Dans ${diff}j`:'—';
+  document.querySelector('#insTable tbody').innerHTML=sorted.length?sorted.map(s=>{
+    const diff=s.dateFin?Math.round((s.dateFin-TODAY)/(864e5)):999;
+    const diffTxt=diff===0?'Aujourd\'hui':diff===1?'Demain':diff>0?`Dans ${diff}j`:'Passé';
     const diffStyle=diff<=7?'color:var(--red);font-weight:700':diff<=30?'color:var(--amber);font-weight:600':'color:var(--text3)';
     return`<tr>
-      <td class="cb-col"><input type="checkbox" class="row-cb" onchange="updateSelCount('prevTable','selCountPrev')"></td>
+      <td class="cb-col"><input type="checkbox" class="row-cb" onchange="updateSelCount('insTable','selCountIns')"></td>
       <td class="td-name" title="${s.titre}">${s.titre.length>42?s.titre.slice(0,42)+'…':s.titre}</td>
       <td style="font-size:11px;color:var(--text2)">${s.domaine.slice(0,22)}</td>
-      <td style="color:var(--amber);font-weight:600;white-space:nowrap">${fmtDate(s.date)}</td>
+      <td style="white-space:nowrap">${fmtDate(s.date)}</td>
+      <td style="color:var(--teal,#0891B2);font-weight:600;white-space:nowrap">${fmtDate(s.dateFin)}</td>
       <td style="${diffStyle};white-space:nowrap">${diffTxt}</td>
       <td>${statBadge(s.statut)}</td>
-      <td style="text-align:center"><span class="badge badge-teal">${s.inscrits}</span></td>
+      <td style="text-align:center"><span class="badge badge-teal">${s.nb}</span></td>
     </tr>`;
-  }).join(''):`<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text3)">Aucune session prévue</td></tr>`;
+  }).join(''):`<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--text3)">Aucun inscrit (qualification vide + date fin future)</td></tr>`;
 }
 
 function renderFicheStagiaires(){
   const stags={};
   currentMagRows.forEach(r=>{
     const k=r[COL.matricule]||r[COL.nom]+r[COL.prenom];
-    if(!stags[k])stags[k]={mat:r[COL.matricule],nom:r[COL.nom],prenom:r[COL.prenom],csp:r[COL.csp],qualifs:[],real:new Set(),prev:new Set(),dur:0};
-    if(isSessEffectuee(r)){stags[k].real.add(r[COL.titre]);stags[k].dur+=parseFloat(r[COL.duree])||0;stags[k].qualifs.push({q:r[COL.qualif],d:r['_date']});}
-    if(isPrevu(r))stags[k].prev.add(r[COL.session]);
+    if(!stags[k])stags[k]={mat:r[COL.matricule],nom:r[COL.nom],prenom:r[COL.prenom],csp:r[COL.csp],qualifs:[],dur:0};
+    const q=getQualif(r);
+    stags[k].qualifs.push(q);
+    if(q==='Réalisé')stags[k].dur+=parseFloat(r[COL.duree])||0;
   });
-  const sorted=Object.values(stags).sort((a,b)=>b.real.size-a.real.size);
-  const getBadge=d=>{
-    // Badge du stagiaire = basé sur toutes ses qualifs
-    const hasPresent=d.qualifs.some(x=>{const q=String(x.q||'').trim();return q==='Présent'||q==='Présent partiel'||(q===''&&x.d&&x.d<TODAY);});
-    const hasAbsent=d.qualifs.some(x=>String(x.q||'').trim()==='Absent');
-    const hasAnnule=d.qualifs.some(x=>String(x.q||'').trim()==='Annulé');
-    const hasSS=d.qualifs.some(x=>String(x.q||'').trim()===''&&x.d&&x.d<TODAY);
-    if(d.real.size===0&&d.prev.size>0)return`<span class="badge badge-teal">Prévu</span>`;
-    if(hasPresent)return`<span class="badge badge-green">Présent*</span>`;
-    if(hasAbsent&&!hasPresent)return`<span class="badge badge-red">Absent</span>`;
-    if(hasAnnule&&!hasPresent&&!hasAbsent)return`<span class="badge badge-gray">Annulé</span>`;
-    if(hasSS)return`<span class="badge badge-purple">Sans statut passé</span>`;
-    return`<span class="badge badge-gray">—</span>`;
+  const ORDER=['Réalisé','Inscrit','Absent','Annulé','Autre'];
+  const sorted=Object.values(stags).sort((a,b)=>{
+    const qa=ORDER.indexOf(a.qualifs[0]||'Autre');
+    const qb=ORDER.indexOf(b.qualifs[0]||'Autre');
+    return qa-qb;
+  });
+  const getMainQ=d=>{
+    const counts={Réalisé:0,Inscrit:0,Absent:0,Annulé:0};
+    d.qualifs.forEach(q=>{if(counts[q]!==undefined)counts[q]++;});
+    if(counts['Réalisé']>0)return'Réalisé';
+    if(counts['Inscrit']>0)return'Inscrit';
+    if(counts['Absent']>0)return'Absent';
+    if(counts['Annulé']>0)return'Annulé';
+    return'Autre';
   };
+  const countQ=d=>({
+    r:d.qualifs.filter(q=>q==='Réalisé').length,
+    i:d.qualifs.filter(q=>q==='Inscrit').length,
+    a:d.qualifs.filter(q=>q==='Absent').length,
+    an:d.qualifs.filter(q=>q==='Annulé').length
+  });
   const renderTbl=data=>{
-    document.querySelector('#stagTable tbody').innerHTML=data.slice(0,200).map(d=>`<tr>
-      <td class="cb-col"><input type="checkbox" class="row-cb" onchange="updateSelCount('stagTable','selCountStag')"></td>
-      <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${d.mat||'—'}</td>
-      <td style="font-weight:600">${d.nom}</td><td>${d.prenom}</td><td>${d.csp}</td>
-      <td>${getBadge(d)}</td>
-      <td style="text-align:center"><span class="badge badge-green">${d.real.size}</span></td>
-      <td style="text-align:center"><span class="badge badge-teal">${d.prev.size}</span></td>
-      <td style="font-family:var(--mono)">${Math.round(d.dur)}</td>
-    </tr>`).join('');
+    document.querySelector('#stagTable tbody').innerHTML=data.slice(0,200).map(d=>{
+      const mq=getMainQ(d);const c=countQ(d);
+      return`<tr>
+        <td class="cb-col"><input type="checkbox" class="row-cb" onchange="updateSelCount('stagTable','selCountStag')"></td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${d.mat||'—'}</td>
+        <td style="font-weight:600">${d.nom}</td><td>${d.prenom}</td><td>${d.csp}</td>
+        <td>${qualifBadge(mq)}</td>
+        <td style="text-align:center"><span class="badge badge-green">${c.r}</span></td>
+        <td style="text-align:center"><span class="badge badge-teal">${c.i}</span></td>
+        <td style="font-family:var(--mono)">${Math.round(d.dur)}</td>
+      </tr>`;
+    }).join('');
   };
   renderTbl(sorted);
   document.getElementById('searchStagFiche').oninput=function(){const q=this.value.toLowerCase();renderTbl(sorted.filter(d=>!q||(d.nom+d.prenom+d.mat).toLowerCase().includes(q)));};
 }
 
-function renderFicheSansStatut(ssRows){
-  document.querySelector('#ssTable tbody').innerHTML=ssRows.length?ssRows.slice(0,200).map(r=>`<tr>
+function renderFicheAnnules(){
+  const rows=currentMagRows.filter(isAnnule);
+  document.querySelector('#annTable tbody').innerHTML=rows.length?rows.slice(0,200).map(r=>`<tr>
     <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${r[COL.matricule]||'—'}</td>
     <td style="font-weight:600">${r[COL.nom]}</td><td>${r[COL.prenom]}</td><td>${r[COL.csp]}</td>
     <td class="td-name" title="${r[COL.titre]}">${r[COL.titre].length>36?r[COL.titre].slice(0,36)+'…':r[COL.titre]}</td>
     <td style="white-space:nowrap">${fmtDate(r['_date'])}</td>
     <td>${statBadge(r[COL.statut])}</td>
-  </tr>`).join(''):`<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text3)">✓ Aucun stagiaire sans statut passé</td></tr>`;
+    <td><span class="badge badge-red">${String(r[COL.qualif]||'').trim()||'(session annulée)'}</span></td>
+  </tr>`).join(''):`<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--text3)">Aucun annulé</td></tr>`;
 }
 
 function switchFicheTab(id){
-  const tabs=['sessions','prevues','stagiaires','sans-statut'];
+  const tabs=['sessions','inscrits','stagiaires','annules'];
   document.querySelectorAll('#ficheTabs .tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
   document.querySelectorAll('#ficheContent .tab-pane').forEach(p=>p.classList.toggle('active',p.id===`fiche-tab-${id}`));
 }
@@ -861,8 +882,8 @@ function switchFicheTab(id){
 // Checkboxes
 function toggleAllCb(tableId,checked){
   document.querySelectorAll(`#${tableId} .row-cb`).forEach(cb=>cb.checked=checked);
-  const countId={sessTable:'selCountSess',prevTable:'selCountPrev',stagTable:'selCountStag',tableStagiaires:'selCountStagGlobal'}[tableId]||'';
-  if(countId)updateSelCount(tableId,countId);
+  const map={sessTable:'selCountSess',insTable:'selCountIns',stagTable:'selCountStag',tableStagiaires:'selCountStagGlobal'};
+  if(map[tableId])updateSelCount(tableId,map[tableId]);
 }
 function updateSelCount(tableId,countId){
   const n=document.querySelectorAll(`#${tableId} .row-cb:checked`).length;
@@ -872,16 +893,18 @@ function exportSelectedXLSX(tableId,name){
   const rows=[];
   document.querySelectorAll(`#${tableId} tbody tr`).forEach(tr=>{
     const cb=tr.querySelector('.row-cb');
-    if(cb&&cb.checked){
-      const cells=[...tr.querySelectorAll('td')].slice(1).map(td=>td.textContent.trim());
-      rows.push(cells);
-    }
+    if(cb&&cb.checked){rows.push([...tr.querySelectorAll('td')].slice(1).map(td=>td.textContent.trim()));}
   });
   if(!rows.length){alert('Sélectionne au moins une ligne.');return;}
-  const hdrs={sessTable:['Formation','Domaine','Date','Statut','Inscrits','Présents*','Absents','Annulés','Sans statut passé','Durée (H)'],prevTable:['Formation','Domaine','Date prévue','Dans','Statut','Stagiaires prévus'],stagTable:['Matricule','Nom','Prénom','CSP','Présence','Sessions réalisées','Sessions prévues','Durée (H)'],tableStagiaires:['Matricule','Nom','Prénom','CSP','Magasin','Catégorie','Territoire','Présence','Formé','Prévu','Durée (H)']};
-  const hdr=hdrs[tableId]||Object.keys(rows[0]||{});
+  const hdrs={
+    sessTable:['Formation','Domaine','Date début','Date fin','Statut session','Inscrits','Réalisés','Absents','Annulés','Durée (H)'],
+    insTable:['Formation','Domaine','Date début','Date fin','Dans','Statut session','Nb inscrits'],
+    stagTable:['Matricule','Nom','Prénom','CSP','Qualification','Réalisés','Inscrits','Durée (H)'],
+    tableStagiaires:['Matricule','Nom','Prénom','CSP','Magasin','Catégorie','Territoire','Qualification','Réalisés','Inscrits','Durée (H)']
+  };
+  const hdr=hdrs[tableId]||[];
   const ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);
-  ws['!cols']=hdr.map((_,i)=>({wch:i===0||i===1?38:16}));
+  ws['!cols']=hdr.map((_,i)=>({wch:i<2?38:16}));
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,name.slice(0,30));
   XLSX.writeFile(wb,`${name}_selection.xlsx`);
 }
@@ -891,74 +914,90 @@ function renderFormations(){
   const data={};
   filtered.forEach(r=>{
     const k=r[COL.titre]||'N/A';
-    if(!data[k])data[k]={domaine:r[COL.domaine]||'',sous:r[COL.sousDomaine]||'',sessEff:new Set(),sessAv:new Set(),stags:new Set(),presents:0,absents:0,annules:0,ssP:0};
-    if(isSessEffectuee(r)){data[k].sessEff.add(r[COL.session]);data[k].stags.add(r[COL.matricule]);if(isPresent(r))data[k].presents++;if(isAbsent(r))data[k].absents++;if(isAnnule(r))data[k].annules++;if(isSansStatutPasse(r))data[k].ssP++;}
-    if(isSessAvenir(r))data[k].sessAv.add(r[COL.session]);
+    if(!data[k])data[k]={domaine:r[COL.domaine]||'',sous:r[COL.sousDomaine]||'',sess:new Set(),r:0,i:0,a:0,an:0};
+    data[k].sess.add(r[COL.session]);
+    const q=getQualif(r);
+    if(q==='Réalisé')data[k].r++;else if(q==='Inscrit')data[k].i++;else if(q==='Absent')data[k].a++;else if(q==='Annulé')data[k].an++;
   });
-  const sorted=Object.entries(data).sort((a,b)=>b[1].stags.size-a[1].stags.size);
-  const max=sorted[0]?.[1].stags.size||1;
-  document.getElementById('topFormationsProgress').innerHTML=sorted.slice(0,15).map(([l,d])=>`<div class="prog-row"><div class="prog-label" title="${l}" style="min-width:220px;max-width:220px">${l.length>36?l.slice(0,36)+'…':l}</div><div class="prog-bg"><div class="prog-fill" style="width:${Math.round(d.stags.size/max*100)}%;background:var(--red)"></div></div><div class="prog-count">${d.stags.size}</div></div>`).join('');
+  const sorted=Object.entries(data).sort((a,b)=>b[1].r-a[1].r);
+  const max=sorted[0]?.[1].r||1;
+  document.getElementById('topFormationsProgress').innerHTML=sorted.slice(0,15).map(([l,d])=>`<div class="prog-row"><div class="prog-label" title="${l}" style="min-width:220px;max-width:220px">${l.length>36?l.slice(0,36)+'…':l}</div><div class="prog-bg"><div class="prog-fill" style="width:${Math.round(d.r/max*100)}%;background:var(--green)"></div></div><div class="prog-count">${d.r}</div></div>`).join('');
   document.querySelector('#tableFormations tbody').innerHTML=sorted.slice(0,100).map(([n,d],i)=>`<tr>
     <td style="font-family:var(--mono);color:var(--text3);font-size:11px">${i+1}</td>
     <td class="td-name" title="${n}">${n.length>46?n.slice(0,46)+'…':n}</td>
     <td style="font-size:11px;color:var(--text2)">${d.domaine.replace(/^\d+\.\s*/,'').slice(0,22)}</td>
     <td style="font-size:11px;color:var(--text3)">${d.sous.replace(/^\d+\.\d*\s*/,'').slice(0,28)}</td>
-    <td style="color:var(--green);font-weight:700">${d.sessEff.size}</td>
-    <td style="color:var(--amber);font-weight:700">${d.sessAv.size}</td>
-    <td>${[...d.stags].filter(Boolean).length}</td>
-    <td style="color:var(--green);font-weight:700">${d.presents}</td>
-    <td style="color:var(--red);font-weight:700">${d.absents}</td>
-    <td style="color:var(--gray);font-weight:700">${d.annules}</td>
-    <td style="color:#7C3AED;font-weight:700">${d.ssP}</td>
+    <td>${d.sess.size}</td>
+    <td style="color:var(--green);font-weight:700">${d.r}</td>
+    <td style="color:#0891B2;font-weight:700">${d.i}</td>
+    <td style="color:var(--amber);font-weight:700">${d.a}</td>
+    <td style="color:var(--gray);font-weight:700">${d.an}</td>
   </tr>`).join('');
 }
 
 // ===== STAGIAIRES =====
 function switchStagTab(id){
-  document.querySelectorAll('#page-stagiaires .tabs .tab').forEach((t,i)=>t.classList.toggle('active',['tous','sans-statut'][i]===id));
+  const tabs=['tous','inscrits','annules'];
+  document.querySelectorAll('#page-stagiaires .tabs .tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
   document.getElementById('stag-tab-tous').style.display=id==='tous'?'block':'none';
-  document.getElementById('stag-tab-sans-statut').style.display=id==='sans-statut'?'block':'none';
+  document.getElementById('stag-tab-inscrits').style.display=id==='inscrits'?'block':'none';
+  document.getElementById('stag-tab-annules').style.display=id==='annules'?'block':'none';
 }
 
 function renderStagiaires(){
   const stags={};
   filtered.forEach(r=>{
     const k=r[COL.matricule]||r[COL.nom]+r[COL.prenom];
-    if(!stags[k])stags[k]={mat:r[COL.matricule],nom:r[COL.nom],prenom:r[COL.prenom],csp:r[COL.csp],client:r[COL.client],cat:r[COL.categorie]||'',dt:getInfo(r[COL.client]).dt||'',qualifs:[],real:new Set(),prev:new Set(),dur:0};
-    if(isSessEffectuee(r)){stags[k].real.add(r[COL.titre]);stags[k].dur+=parseFloat(r[COL.duree])||0;stags[k].qualifs.push({q:r[COL.qualif],d:r['_date']});}
-    if(isPrevu(r))stags[k].prev.add(r[COL.session]);
+    if(!stags[k])stags[k]={mat:r[COL.matricule],nom:r[COL.nom],prenom:r[COL.prenom],csp:r[COL.csp],client:r[COL.client],cat:r[COL.categorie]||'',dt:getInfo(r[COL.client]).dt||'',qualifs:[],dur:0};
+    const q=getQualif(r);
+    stags[k].qualifs.push(q);
+    if(q==='Réalisé')stags[k].dur+=parseFloat(r[COL.duree])||0;
   });
-  const sorted=Object.values(stags).sort((a,b)=>b.real.size-a.real.size);
-  const getBadge=d=>{
-    const hasPresent=d.qualifs.some(x=>{const q=String(x.q||'').trim();return q==='Présent'||q==='Présent partiel'||(q===''&&x.d&&x.d<TODAY);});
-    const hasAbsent=d.qualifs.some(x=>String(x.q||'').trim()==='Absent');
-    const hasAnnule=d.qualifs.some(x=>String(x.q||'').trim()==='Annulé');
-    if(d.real.size===0&&d.prev.size>0)return`<span class="badge badge-teal">Prévu</span>`;
-    if(hasPresent)return`<span class="badge badge-green">Présent*</span>`;
-    if(hasAbsent&&!hasPresent)return`<span class="badge badge-red">Absent</span>`;
-    if(hasAnnule&&!hasPresent&&!hasAbsent)return`<span class="badge badge-gray">Annulé</span>`;
-    return`<span class="badge badge-purple">Sans statut passé</span>`;
-  };
+  const ORDER=['Réalisé','Inscrit','Absent','Annulé'];
+  const getMain=d=>{if(d.qualifs.includes('Réalisé'))return'Réalisé';if(d.qualifs.includes('Inscrit'))return'Inscrit';if(d.qualifs.includes('Absent'))return'Absent';if(d.qualifs.includes('Annulé'))return'Annulé';return'Autre';};
+  const sorted=Object.values(stags).sort((a,b)=>{const qa=ORDER.indexOf(getMain(a));const qb=ORDER.indexOf(getMain(b));return qa-qb||b.qualifs.filter(q=>q==='Réalisé').length-a.qualifs.filter(q=>q==='Réalisé').length;});
+
   const renderTable=data=>{
-    document.querySelector('#tableStagiaires tbody').innerHTML=data.slice(0,200).map(d=>`<tr>
-      <td class="cb-col"><input type="checkbox" class="row-cb" onchange="updateSelCount('tableStagiaires','selCountStagGlobal')"></td>
-      <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${d.mat||'—'}</td>
-      <td style="font-weight:600">${d.nom}</td><td>${d.prenom}</td><td>${d.csp}</td>
-      <td style="font-size:11px">${d.client}</td>
-      <td style="font-size:11px;color:var(--text2)">${d.cat}</td>
-      <td style="font-size:11px;color:var(--text3)">${d.dt}</td>
-      <td>${getBadge(d)}</td>
-      <td><span class="badge badge-green">${d.real.size}</span></td>
-      <td><span class="badge badge-teal">${d.prev.size}</span></td>
-      <td style="font-family:var(--mono)">${Math.round(d.dur)}</td>
-    </tr>`).join('');
+    document.querySelector('#tableStagiaires tbody').innerHTML=data.slice(0,200).map(d=>{
+      const mq=getMain(d);
+      const cr=d.qualifs.filter(q=>q==='Réalisé').length;
+      const ci=d.qualifs.filter(q=>q==='Inscrit').length;
+      return`<tr>
+        <td class="cb-col"><input type="checkbox" class="row-cb" onchange="updateSelCount('tableStagiaires','selCountStagGlobal')"></td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${d.mat||'—'}</td>
+        <td style="font-weight:600">${d.nom}</td><td>${d.prenom}</td><td>${d.csp}</td>
+        <td style="font-size:11px">${d.client}</td>
+        <td style="font-size:11px;color:var(--text2)">${d.cat}</td>
+        <td style="font-size:11px;color:var(--text3)">${d.dt}</td>
+        <td>${qualifBadge(mq)}</td>
+        <td><span class="badge badge-green">${cr}</span></td>
+        <td><span class="badge badge-teal">${ci}</span></td>
+        <td style="font-family:var(--mono)">${Math.round(d.dur)}</td>
+      </tr>`;
+    }).join('');
   };
   renderTable(sorted);
   document.getElementById('searchStagGlobal').oninput=function(){const q=this.value.toLowerCase();renderTable(sorted.filter(d=>!q||(d.nom+d.prenom+d.mat+d.client).toLowerCase().includes(q)));};
 
-  const ss=filtered.filter(r=>isSessEffectuee(r)&&isSansStatutPasse(r));
-  document.getElementById('cnt-ss-global').textContent=ss.length||'';
-  document.querySelector('#tableSansStatut tbody').innerHTML=ss.length?ss.slice(0,300).map(r=>`<tr>
+  // Inscrits
+  const insRows=filtered.filter(isInscrit);
+  const cntI=insRows.length;
+  document.getElementById('cnt-inscrit-global').textContent=cntI||'';
+  document.querySelector('#tableInscrits tbody').innerHTML=insRows.length?insRows.slice(0,300).map(r=>`<tr>
+    <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${r[COL.matricule]||'—'}</td>
+    <td style="font-weight:600">${r[COL.nom]}</td><td>${r[COL.prenom]}</td><td>${r[COL.csp]}</td>
+    <td style="font-size:11px">${r[COL.client]}</td>
+    <td style="font-size:11px;color:var(--text2)">${r[COL.categorie]||''}</td>
+    <td class="td-name" title="${r[COL.titre]}">${r[COL.titre].length>36?r[COL.titre].slice(0,36)+'…':r[COL.titre]}</td>
+    <td style="white-space:nowrap;color:#0891B2;font-weight:600">${fmtDate(r['_dateFin'])}</td>
+    <td>${statBadge(r[COL.statut])}</td>
+  </tr>`).join(''):`<tr><td colspan="9" style="padding:20px;text-align:center;color:var(--text3)">Aucun inscrit</td></tr>`;
+
+  // Annulés
+  const annRows=filtered.filter(isAnnule);
+  const cntA=annRows.length;
+  document.getElementById('cnt-ann-global').textContent=cntA||'';
+  document.querySelector('#tableAnnules tbody').innerHTML=annRows.length?annRows.slice(0,300).map(r=>`<tr>
     <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${r[COL.matricule]||'—'}</td>
     <td style="font-weight:600">${r[COL.nom]}</td><td>${r[COL.prenom]}</td><td>${r[COL.csp]}</td>
     <td style="font-size:11px">${r[COL.client]}</td>
@@ -966,35 +1005,31 @@ function renderStagiaires(){
     <td class="td-name" title="${r[COL.titre]}">${r[COL.titre].length>36?r[COL.titre].slice(0,36)+'…':r[COL.titre]}</td>
     <td style="white-space:nowrap">${fmtDate(r['_date'])}</td>
     <td>${statBadge(r[COL.statut])}</td>
-  </tr>`).join(''):`<tr><td colspan="9" style="padding:20px;text-align:center;color:var(--text3)">✓ Aucun stagiaire sans statut passé</td></tr>`;
+    <td><span class="badge badge-red">${String(r[COL.qualif]||'').trim()||'(session annulée)'}</span></td>
+  </tr>`).join(''):`<tr><td colspan="10" style="padding:20px;text-align:center;color:var(--text3)">Aucun annulé</td></tr>`;
 }
 
 // ===== EXPORTS =====
 function getExportRows(rows){
   return rows.map(r=>{
     const i=getInfo(r[COL.client]);
-    const type=isSessEffectuee(r)?'Effectuée':isSessAvenir(r)?'À venir':isSessAnnulee(r)?'Annulée':'Autre';
-    const q=String(r[COL.qualif]||'').trim();
-    const d=r['_date'];
-    let pres='—';
-    if(isSessEffectuee(r)){if(q==='Présent'||q==='Présent partiel'||(q===''&&d&&d<TODAY))pres='Présent*';else if(q==='Absent')pres='Absent';else if(q==='Annulé')pres='Annulé';else if(q===''&&d&&d<TODAY)pres='Sans statut passé';}
-    else if(isPrevu(r))pres='Prévu';
-    return[r[COL.session],r[COL.titre],r[COL.statut],r[COL.qualif]||'',type,pres,fmtDate(r['_date']),r[COL.domaine],r[COL.sousDomaine],r[COL.client],r[COL.categorie],r[COL.matricule],r[COL.nom],r[COL.prenom],r[COL.csp],r[COL.duree],i.dt,i.region];
+    const q=getQualif(r);
+    return[r[COL.session],r[COL.titre],r[COL.statut],String(r[COL.qualif]===null||r[COL.qualif]===undefined?'':r[COL.qualif]).trim()||'(vide)',q,fmtDate(r['_date']),fmtDate(r['_dateFin']),r[COL.domaine],r[COL.sousDomaine],r[COL.client],r[COL.categorie],r[COL.matricule],r[COL.nom],r[COL.prenom],r[COL.csp],r[COL.duree],i.dt,i.region];
   });
 }
-const EXPORT_HDR=['Session','Formation','Statut session','Qualification (AB)','Type','Présence','Date début','Domaine','Sous-domaine','Client','Catégorie','Matricule','Nom','Prénom','CSP','Durée (H)','DT','Région'];
+const EXPORT_HDR=['Session','Formation','Statut session','Qualification brute (col AB)','Qualification calculée','Date début','Date fin','Domaine','Sous-domaine','Client','Catégorie','Matricule','Nom','Prénom','CSP','Durée (H)','DT','Région'];
 
 function exportCSV(){if(!filtered.length)return;const lines=[EXPORT_HDR.join(';'),...getExportRows(filtered).map(r=>r.map(v=>'"'+String(v||'')+'"').join(';'))];const blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`formations_${new Date().toISOString().slice(0,7)}.csv`;a.click();}
-function exportXLSX(){if(!filtered.length)return;const ws=XLSX.utils.aoa_to_sheet([EXPORT_HDR,...getExportRows(filtered)]);ws['!cols']=EXPORT_HDR.map((_,i)=>({wch:i<2?40:i<6?18:i<10?26:14}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Formations');XLSX.writeFile(wb,`formations_${new Date().toISOString().slice(0,7)}.xlsx`);}
+function exportXLSX(){if(!filtered.length)return;const ws=XLSX.utils.aoa_to_sheet([EXPORT_HDR,...getExportRows(filtered)]);ws['!cols']=EXPORT_HDR.map((_,i)=>({wch:i<2?40:i<5?20:i<9?26:14}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Formations');XLSX.writeFile(wb,`formations_${new Date().toISOString().slice(0,7)}.xlsx`);}
 function exportFicheCSV(){if(!selectedMag||!currentMagRows.length)return;const lines=[EXPORT_HDR.join(';'),...getExportRows(currentMagRows).map(r=>r.map(v=>'"'+String(v||'')+'"').join(';'))];const blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`fiche_${selectedMag.replace(/\s+/g,'_')}.csv`;a.click();}
-function exportFicheXLSX(){if(!selectedMag||!currentMagRows.length)return;const ws=XLSX.utils.aoa_to_sheet([EXPORT_HDR,...getExportRows(currentMagRows)]);ws['!cols']=EXPORT_HDR.map((_,i)=>({wch:i<2?40:i<6?18:i<10?26:14}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,selectedMag.slice(0,28));XLSX.writeFile(wb,`fiche_${selectedMag.replace(/\s+/g,'_')}.xlsx`);}
+function exportFicheXLSX(){if(!selectedMag||!currentMagRows.length)return;const ws=XLSX.utils.aoa_to_sheet([EXPORT_HDR,...getExportRows(currentMagRows)]);ws['!cols']=EXPORT_HDR.map((_,i)=>({wch:i<2?40:i<5?20:i<9?26:14}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,selectedMag.slice(0,28));XLSX.writeFile(wb,`fiche_${selectedMag.replace(/\s+/g,'_')}.xlsx`);}
 function exportStagGlobalXLSX(){
   const stags={};
-  filtered.forEach(r=>{const k=r[COL.matricule]||r[COL.nom]+r[COL.prenom];if(!stags[k])stags[k]={mat:r[COL.matricule],nom:r[COL.nom],prenom:r[COL.prenom],csp:r[COL.csp],client:r[COL.client],cat:r[COL.categorie]||'',dt:getInfo(r[COL.client]).dt||'',qualifs:[],real:new Set(),prev:new Set(),dur:0};if(isSessEffectuee(r)){stags[k].real.add(r[COL.titre]);stags[k].dur+=parseFloat(r[COL.duree])||0;stags[k].qualifs.push({q:r[COL.qualif],d:r['_date']});}if(isPrevu(r))stags[k].prev.add(r[COL.session]);});
-  const sorted=Object.values(stags).sort((a,b)=>b.real.size-a.real.size);
-  const getPresStr=d=>{const hasP=d.qualifs.some(x=>{const q=String(x.q||'').trim();return q==='Présent'||q==='Présent partiel'||(q===''&&x.d&&x.d<TODAY);});const hasA=d.qualifs.some(x=>String(x.q||'').trim()==='Absent');const hasAn=d.qualifs.some(x=>String(x.q||'').trim()==='Annulé');if(d.real.size===0&&d.prev.size>0)return'Prévu';if(hasP)return'Présent*';if(hasA&&!hasP)return'Absent';if(hasAn&&!hasP&&!hasA)return'Annulé';return'Sans statut passé';};
-  const hdr=['Matricule','Nom','Prénom','CSP','Magasin','Catégorie','Territoire','Présence','Sessions formées','Sessions prévues','Durée (H)'];
-  const rows=sorted.map(d=>[d.mat||'',d.nom,d.prenom,d.csp,d.client,d.cat,d.dt,getPresStr(d),d.real.size,d.prev.size,Math.round(d.dur)]);
+  filtered.forEach(r=>{const k=r[COL.matricule]||r[COL.nom]+r[COL.prenom];if(!stags[k])stags[k]={mat:r[COL.matricule],nom:r[COL.nom],prenom:r[COL.prenom],csp:r[COL.csp],client:r[COL.client],cat:r[COL.categorie]||'',dt:getInfo(r[COL.client]).dt||'',qualifs:[],dur:0};const q=getQualif(r);stags[k].qualifs.push(q);if(q==='Réalisé')stags[k].dur+=parseFloat(r[COL.duree])||0;});
+  const getMain=d=>{if(d.qualifs.includes('Réalisé'))return'Réalisé';if(d.qualifs.includes('Inscrit'))return'Inscrit';if(d.qualifs.includes('Absent'))return'Absent';if(d.qualifs.includes('Annulé'))return'Annulé';return'Autre';};
+  const sorted=Object.values(stags).sort((a,b)=>b.qualifs.filter(q=>q==='Réalisé').length-a.qualifs.filter(q=>q==='Réalisé').length);
+  const hdr=['Matricule','Nom','Prénom','CSP','Magasin','Catégorie','Territoire','Qualification principale','Réalisés','Inscrits','Durée (H)'];
+  const rows=sorted.map(d=>[d.mat||'',d.nom,d.prenom,d.csp,d.client,d.cat,d.dt,getMain(d),d.qualifs.filter(q=>q==='Réalisé').length,d.qualifs.filter(q=>q==='Inscrit').length,Math.round(d.dur)]);
   const ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);ws['!cols']=hdr.map((_,i)=>({wch:i<4?16:i<7?22:16}));
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Stagiaires');
   XLSX.writeFile(wb,`stagiaires_${new Date().toISOString().slice(0,7)}.xlsx`);
