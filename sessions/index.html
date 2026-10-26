@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sessions de formation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one working column — search console on top, summary strip, then a dense list of session rows led by a places badge. */
+:root {
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --ink: #16213d;
+  --muted: #5b6684;
+  --line: #dde2ee;
+  --accent: #2346a8;
+  --accent-soft: #e6ecfb;
+  --ok: #0d7a46; --ok-soft: #dcf3e6;
+  --warn: #9a5b00; --warn-soft: #fdf0d6;
+  --full: #b4232f; --full-soft: #fbe3e5;
+  --focus: #2346a8;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1424; --surface: #171e33; --ink: #e8ecf7; --muted: #9aa5c2; --line: #2a3350;
+    --accent: #8eaaff; --accent-soft: #212c4d;
+    --ok: #5fd39a; --ok-soft: #133426; --warn: #f2be5c; --warn-soft: #3a2c10; --full: #ff8a93; --full-soft: #3d1a1f;
+    --focus: #8eaaff; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1424; --surface: #171e33; --ink: #e8ecf7; --muted: #9aa5c2; --line: #2a3350;
+  --accent: #8eaaff; --accent-soft: #212c4d;
+  --ok: #5fd39a; --ok-soft: #133426; --warn: #f2be5c; --warn-soft: #3a2c10; --full: #ff8a93; --full-soft: #3d1a1f;
+  --focus: #8eaaff; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
+header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+header.top h1 { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 4vw, 36px); line-height: 1.05; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.fresh { color: var(--muted); font-size: 13.5px; margin-top: 6px; }
+.fresh b { color: var(--ink); font-weight: 600; }
+.btn { font: 600 14px/1 var(--body); border-radius: 8px; padding: 11px 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.link { border: 0; background: none; color: var(--accent); padding: 6px 2px; }
+button:focus-visible, input:focus-visible, select:focus-visible, label.drop:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.console { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 14px; }
+.q { position: relative; }
+.q input { width: 100%; font: 500 18px/1.2 var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 14px 14px 44px; }
+.q svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--muted); }
+.q input::placeholder { color: var(--muted); font-weight: 400; }
+.filters { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end; }
+.field { display: grid; gap: 5px; }
+.field label, .lbl { font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.field input[type=date], .field select { font: 500 15px var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; min-height: 42px; }
+.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; min-height: 42px; font-weight: 600; font-size: 14.5px; }
+.switch input { appearance: none; width: 42px; height: 24px; border-radius: 99px; background: var(--line); position: relative; cursor: pointer; transition: background .15s; margin: 0; }
+.switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.switch input:checked { background: var(--ok); }
+.switch input:checked::after { transform: translateX(18px); }
+.hint { color: var(--muted); font-size: 13px; }
+.spacer { flex: 1 1 auto; }
+
+.summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.fig { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 2px; }
+.fig .v { font-family: var(--display); font-weight: 700; font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.fig.places { border-color: var(--ok); background: var(--ok-soft); }
+.fig.places .v { color: var(--ok); }
+.fig .k { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+
+.listhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.listhead .count { font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12.5px; color: var(--muted); align-items: center; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+
+.list { display: grid; gap: 8px; }
+.row { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: grid; grid-template-columns: 92px minmax(0, 1fr) 170px minmax(0, 230px); gap: 0 16px; align-items: stretch; overflow: hidden; }
+.badge { display: grid; place-content: center; text-align: center; padding: 12px 6px; font-variant-numeric: tabular-nums; }
+.badge .n { font-family: var(--display); font-weight: 700; font-size: 30px; line-height: 1; }
+.badge .u { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-top: 4px; }
+.badge.ok { background: var(--ok-soft); color: var(--ok); }
+.badge.warn { background: var(--warn-soft); color: var(--warn); }
+.badge.full { background: var(--full-soft); color: var(--full); }
+.badge.full .n { font-size: 15px; letter-spacing: .04em; }
+.main { padding: 12px 0; min-width: 0; display: grid; gap: 4px; align-content: center; }
+.title { font-weight: 700; font-size: 15.5px; line-height: 1.3; }
+.sub { color: var(--muted); font-size: 13.5px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 12.5px; color: var(--muted); align-items: center; }
+.meta code { font: 600 12.5px var(--body); color: var(--ink); background: var(--accent-soft); padding: 2px 7px; border-radius: 5px; }
+.chip { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+.chip.qualif { border-color: var(--warn); color: var(--warn); }
+.when, .where { padding: 12px 14px 12px 0; display: grid; gap: 3px; align-content: center; font-size: 13.5px; min-width: 0; }
+.when .d { font-weight: 700; font-variant-numeric: tabular-nums; }
+.when .s, .where .s { color: var(--muted); font-size: 12.5px; }
+.where .l { font-weight: 600; overflow-wrap: anywhere; }
+.fillbar { height: 5px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 4px; max-width: 150px; }
+.fillbar span { display: block; height: 100%; background: var(--accent); }
+.more { justify-self: center; margin-top: 6px; }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 28px; text-align: center; color: var(--muted); }
+
+.panel { background: var(--surface); border: 1px solid var(--accent); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+.panel h2 { font-family: var(--display); font-size: 20px; margin: 0; }
+label.drop { border: 2px dashed var(--line); border-radius: 10px; padding: 22px; text-align: center; cursor: pointer; display: grid; gap: 6px; color: var(--muted); }
+label.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+label.drop b { color: var(--ink); }
+label.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.progress span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.msg { font-size: 14px; }
+.msg.err { color: var(--full); font-weight: 600; }
+.msg.ok { color: var(--ok); font-weight: 600; }
+
+@media (max-width: 860px) {
+  .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fig .v { font-size: 23px; }
+  .fig { padding: 12px; }
+  .row { grid-template-columns: 78px minmax(0, 1fr); }
+  .when, .where { grid-column: 2; padding: 0 14px 0 0; }
+  .where { padding-bottom: 12px; }
+  .main { padding-bottom: 4px; }
+  .badge { grid-row: span 3; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.field.grow { flex: 1 1 200px; min-width: 0; }
+.field.grow select { width: 100%; }
+.publish { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
+.publish code { font-weight: 600; background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; }
+.dl { display: flex; flex-wrap: wrap; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Sessions de formation</h1>
+      <div class="fresh" id="fresh">Chargement des sessions…</div>
+    </div>
+    <button class="btn primary" id="btnImport" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg>
+      Importer l'export du mois
+    </button>
+  </header>
+
+  <section class="panel" id="panel" hidden aria-labelledby="panelTitle">
+    <h2 id="panelTitle">Importer l'export du mois</h2>
+    <div class="hint">Choisir le fichier <b>SUIVI_INSCRIPTIONS_FORMATIONS</b> tel qu'il est téléchargé (.xlsx). Seul l'onglet Data est lu, directement dans votre navigateur : le fichier n'est envoyé nulle part.</div>
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+      <b>Déposer le fichier ici ou cliquer pour le choisir</b>
+      <span>Un fichier de 200 Mo se lit en quelques secondes.</span>
+    </label>
+    <div class="progress" id="progWrap" hidden><span id="prog"></span></div>
+    <div class="msg" id="msg" role="status"></div>
+    <div id="publish" hidden class="publish">
+      <div class="hint"><b>Pour mettre ces données en ligne pour tout le monde :</b> téléchargez les fichiers ci-dessous, puis remplacez ceux du dossier <code>data</code> sur GitHub (même noms).</div>
+      <div class="dl" id="dlList"></div>
+      <div><button class="btn primary" id="btnAll" type="button">Tout télécharger</button></div>
+    </div>
+    <div><button class="btn" id="btnClose" type="button">Fermer</button></div>
+  </section>
+
+  <section class="console" aria-label="Recherche">
+    <div class="q">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="search" autocomplete="off" placeholder="Référence (8846), N° de session (S-55537) ou mot de l'intitulé (CACES, SST…)" aria-label="Rechercher">
+    </div>
+    <div class="filters">
+      <div class="field"><label for="from">Sessions à partir du</label><input type="date" id="from"></div>
+      <div class="field"><label for="to">Jusqu'au</label><input type="date" id="to"></div>
+      <div class="field grow"><label for="zone">Zone géographique</label><select id="zone"><option value="">Toutes les zones</option></select></div>
+      <div class="field grow"><label for="cat">Catégorie client</label><select id="cat"><option value="">Toutes les catégories</option></select></div>
+    </div>
+    <div class="filters">
+      <label class="switch"><input type="checkbox" id="onlyPlaces" checked> Uniquement avec places disponibles</label>
+      <div class="spacer"></div>
+      <div class="field"><label for="sort">Trier par</label>
+        <select id="sort"><option value="date">Date de début</option><option value="places">Places disponibles</option></select>
+      </div>
+      <button class="btn link" id="btnReset" type="button">Réinitialiser</button>
+    </div>
+  </section>
+
+  <section class="summary" aria-label="Résumé">
+    <div class="fig"><span class="v" id="kSessions">–</span><span class="k">sessions trouvées</span></div>
+    <div class="fig places"><span class="v" id="kPlaces">–</span><span class="k">places disponibles</span></div>
+    <div class="fig"><span class="v" id="kWith">–</span><span class="k">sessions avec places</span></div>
+    <div class="fig"><span class="v" id="kNext">–</span><span class="k">prochaine date avec place</span></div>
+  </section>
+
+  <section aria-label="Résultats" style="display:grid;gap:10px">
+    <div class="listhead">
+      <span class="count" id="count"></span>
+      <span class="legend"><span><i style="background:var(--ok)"></i>3 places ou plus</span><span><i style="background:var(--warn)"></i>1 à 2 places</span><span><i style="background:var(--full)"></i>complet</span></span>
+    </div>
+    <div class="list" id="list"></div>
+    <button class="btn more" id="btnMore" type="button" hidden>Afficher plus</button>
+  </section>
+</div>
+<script>
+/* Lecture en flux de l'export SUIVI_INSCRIPTIONS_FORMATIONS (.xlsx), onglet Data.
+   Ne garde que les lignes portant un N° de session. Aucune dépendance. */
+(function (G) {
+  'use strict';
+  var FIELDS = [
+    ['sess', 'N° session', 's'], ['statut', 'Statut', 'd'], ['debut', 'Date de début', 'date'],
+    ['fin', 'Date de fin', 'date'], ['ref', 'Référence', 's'], ['form', 'Intitulé formation', 'd'],
+    ['intit', 'Intitulé session', 'd'], ['insc', 'Nb. inscriptions', 'n'], ['max', 'Max Participants', 'n'],
+    ['min', 'Min Participants', 'n'], ['lieu', "Lieu d'animation de la formation", 'd'], ['cp', 'Code postal', 'cp'],
+    ['zone', 'Zone géographique', 'd'], ['jours', 'Durée (J.)', 'n'], ['domaine', 'Domaine', 'd'],
+    ['etab', "Nom de l'établissement du formateur", 'd'], ['cat', 'Catégorie client', 'd']
+  ];
+
+  function u16(v, o) { return v.getUint16(o, true); }
+  function u32(v, o) { return v.getUint32(o, true); }
+  function u64(v, o) { return u32(v, o) + u32(v, o + 4) * 4294967296; }
+  async function bytes(blob, a, b) { return new DataView(await blob.slice(a, b).arrayBuffer()); }
+
+  async function readDirectory(blob) {
+    var size = blob.size, tailStart = Math.max(0, size - 65600), tail = await bytes(blob, tailStart, size), p = -1;
+    for (var i = tail.byteLength - 22; i >= 0; i--) { if (u32(tail, i) === 0x06054b50) { p = i; break; } }
+    if (p < 0) throw new Error("Ce fichier n'est pas un classeur Excel (.xlsx).");
+    var count = u16(tail, p + 10), cdSize = u32(tail, p + 12), cdOff = u32(tail, p + 16);
+    if (cdOff === 0xFFFFFFFF || count === 0xFFFF) {
+      var loc = p - 20;
+      if (loc >= 0 && u32(tail, loc) === 0x07064b50) {
+        var z64 = u64(tail, loc + 8), e = await bytes(blob, z64, z64 + 56);
+        count = u64(e, 32); cdSize = u64(e, 40); cdOff = u64(e, 48);
+      }
+    }
+    var cd = await bytes(blob, cdOff, cdOff + cdSize), entries = {}, q = 0, dec = new TextDecoder();
+    for (var n = 0; n < count && q + 46 <= cd.byteLength; n++) {
+      if (u32(cd, q) !== 0x02014b50) break;
+      var method = u16(cd, q + 10), comp = u32(cd, q + 20), unc = u32(cd, q + 24);
+      var nl = u16(cd, q + 28), xl = u16(cd, q + 30), cl = u16(cd, q + 32), off = u32(cd, q + 42);
+      var name = dec.decode(new Uint8Array(cd.buffer, cd.byteOffset + q + 46, nl));
+      var x = q + 46 + nl, xe = x + xl;
+      while (x + 4 <= xe) {
+        var id = u16(cd, x), len = u16(cd, x + 2), k = x + 4;
+        if (id === 1) {
+          if (unc === 0xFFFFFFFF) { unc = u64(cd, k); k += 8; }
+          if (comp === 0xFFFFFFFF) { comp = u64(cd, k); k += 8; }
+          if (off === 0xFFFFFFFF) { off = u64(cd, k); k += 8; }
+        }
+        x += 4 + len;
+      }
+      entries[name.replace(/\\/g, '/')] = { method: method, comp: comp, unc: unc, off: off };
+      q = xe + cl;
+    }
+    return entries;
+  }
+
+  async function entryStream(blob, ent, onBytes) {
+    var h = await bytes(blob, ent.off, ent.off + 30);
+    if (u32(h, 0) !== 0x04034b50) throw new Error('Fichier Excel endommagé.');
+    var start = ent.off + 30 + u16(h, 26) + u16(h, 28);
+    var s = blob.slice(start, start + ent.comp).stream();
+    if (onBytes) {
+      s = s.pipeThrough(new TransformStream({ transform: function (c, ctl) { onBytes(c.byteLength); ctl.enqueue(c); } }));
+    }
+    if (ent.method === 8) s = s.pipeThrough(new DecompressionStream('deflate-raw'));
+    else if (ent.method !== 0) throw new Error('Compression non prise en charge.');
+    return s.pipeThrough(new TextDecoderStream());
+  }
+
+  async function entryText(blob, ent) {
+    var r = (await entryStream(blob, ent)).getReader(), out = [];
+    for (;;) { var x = await r.read(); if (x.done) break; out.push(x.value); }
+    return out.join('');
+  }
+
+  var ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+  function xml(s) {
+    if (s.indexOf('&') >= 0) {
+      s = s.replace(/&(#x[0-9a-fA-F]+|#\d+|amp|lt|gt|quot|apos);/g, function (m, e) {
+        if (e[0] === '#') return String.fromCodePoint(e[1] === 'x' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10));
+        return ENT[e];
+      });
+    }
+    if (s.indexOf('_x') >= 0) s = s.replace(/_x([0-9A-Fa-f]{4})_/g, function (m, h) { return String.fromCharCode(parseInt(h, 16)); });
+    return s;
+  }
+  function richText(inner) {
+    inner = inner.replace(/<rPh\b[\s\S]*?<\/rPh>/g, '');
+    var out = '', re = /<t\b[^>]*?(?:\/>|>([\s\S]*?)<\/t>)/g, m;
+    while ((m = re.exec(inner))) out += m[1] ? xml(m[1]) : '';
+    return out;
+  }
+  function colIndex(ref) {
+    var n = 0;
+    for (var i = 0; i < ref.length; i++) {
+      var c = ref.charCodeAt(i);
+      if (c >= 65 && c <= 90) n = n * 26 + (c - 64); else break;
+    }
+    return n - 1;
+  }
+  function toSerial(v) {
+    if (typeof v === 'number') return Math.floor(v);
+    if (typeof v === 'string') {
+      var m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (m) return Math.round(Date.UTC(+m[3], +m[2] - 1, +m[1]) / 86400000) + 25569;
+      m = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return Math.round(Date.UTC(+m[1], +m[2] - 1, +m[3]) / 86400000) + 25569;
+    }
+    return null;
+  }
+
+  async function parseExport(file, onProgress) {
+    var prog = onProgress || function () {};
+    prog({ step: 'Lecture du fichier', ratio: 0 });
+    var entries = await readDirectory(file);
+    var wbE = entries['xl/workbook.xml'], relE = entries['xl/_rels/workbook.xml.rels'];
+    if (!wbE || !relE) throw new Error("Ce fichier n'est pas un classeur Excel (.xlsx).");
+    var wb = await entryText(file, wbE), rels = await entryText(file, relE);
+    var sh = wb.match(/<sheet\b[^>]*\bname="Data"[^>]*>/);
+    if (!sh) throw new Error("L'onglet « Data » est introuvable dans ce fichier.");
+    var rid = (sh[0].match(/\br:id="([^"]+)"/) || [])[1];
+    var rel = rels.match(new RegExp('<Relationship\\b[^>]*\\bId="' + rid + '"[^>]*>'));
+    var target = rel && (rel[0].match(/\bTarget="([^"]+)"/) || [])[1];
+    if (!target) throw new Error("L'onglet « Data » est illisible.");
+    target = target.replace(/^\//, '');
+    var path = target.indexOf('xl/') === 0 ? target : 'xl/' + target;
+    var sheetE = entries[path];
+    if (!sheetE) throw new Error("L'onglet « Data » est illisible.");
+
+    var sst = [];
+    var sstE = entries['xl/sharedStrings.xml'];
+    if (sstE) {
+      prog({ step: 'Lecture des textes', ratio: 0.02 });
+      var t = await entryText(file, sstE), re = /<si\b[^>]*>([\s\S]*?)<\/si>|<si\s*\/>/g, m;
+      while ((m = re.exec(t))) sst.push(m[1] ? richText(m[1]) : '');
+    }
+
+    var header = null, colOf = null, rows = [], dict = [], dictIdx = new Map(), total = 0, lines = 0;
+    function d(s) {
+      s = s == null ? '' : String(s).trim();
+      var i = dictIdx.get(s);
+      if (i === undefined) { i = dict.length; dict.push(s); dictIdx.set(s, i); }
+      return i;
+    }
+    var cellRe = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g, vRe = /<v>([\s\S]*?)<\/v>/, isRe = /<is>([\s\S]*?)<\/is>/;
+    function cellsOf(rowXml) {
+      var out = [], m, auto = 0;
+      cellRe.lastIndex = 0;
+      while ((m = cellRe.exec(rowXml))) {
+        var a = m[1], body = m[2], rm = a.match(/\br="([A-Z]+)/), ci = rm ? colIndex(rm[1]) : auto;
+        auto = ci + 1;
+        if (!body) continue;
+        var tm = a.match(/\bt="(\w+)"/), ty = tm ? tm[1] : 'n', val = null, vm;
+        if (ty === 'inlineStr') { var im = body.match(isRe); val = im ? richText(im[1]) : ''; }
+        else if ((vm = body.match(vRe))) {
+          var raw = vm[1];
+          if (ty === 's') val = sst[+raw];
+          else if (ty === 'str') val = xml(raw);
+          else if (ty === 'b') val = raw === '1';
+          else if (ty === 'e') val = null;
+          else val = parseFloat(raw);
+        }
+        out[ci] = val;
+      }
+      return out;
+    }
+    function handle(rowXml) {
+      lines++;
+      var c = cellsOf(rowXml);
+      if (!header) {
+        header = c.map(function (v) { return v == null ? '' : String(v).trim(); });
+        colOf = {}; var missing = [];
+        FIELDS.forEach(function (f) {
+          var i = header.indexOf(f[1]);
+          if (i < 0) missing.push(f[1]); else colOf[f[0]] = i;
+        });
+        if (missing.length) throw new Error('Colonnes introuvables dans l\'onglet Data : ' + missing.join(', ') + '.');
+        return;
+      }
+      var s = c[colOf.sess];
+      if (s == null || String(s).trim() === '') return;
+      var row = FIELDS.map(function (f) {
+        var v = c[colOf[f[0]]];
+        if (f[2] === 's') return v == null ? '' : (typeof v === 'number' ? String(v) : String(v).trim());
+        if (f[2] === 'd') return d(v);
+        if (f[2] === 'n') return typeof v === 'number' ? v : (v == null || v === '' ? 0 : (parseFloat(String(v).replace(',', '.')) || 0));
+        if (f[2] === 'date') return toSerial(v);
+        if (f[2] === 'cp') {
+          if (typeof v === 'number') return String(Math.round(v)).padStart(5, '0');
+          return v == null ? '' : String(v).replace(/[\s,]/g, '');
+        }
+      });
+      rows.push(row);
+    }
+
+    var done = 0, rd = (await entryStream(file, sheetE, function (n) {
+      done += n; prog({ step: 'Lecture de l\'onglet Data', ratio: 0.05 + 0.93 * done / sheetE.comp });
+    })).getReader(), buf = '';
+    for (;;) {
+      var x = await rd.read();
+      if (x.done) break;
+      buf += x.value;
+      var pos = 0;
+      for (;;) {
+        var end = buf.indexOf('</row>', pos);
+        if (end < 0) break;
+        var st = buf.lastIndexOf('<row', end);
+        handle(buf.slice(st, end));
+        pos = end + 6;
+      }
+      buf = buf.slice(pos);
+    }
+    if (!header) throw new Error("L'onglet « Data » est vide.");
+    prog({ step: 'Terminé', ratio: 1 });
+    return {
+      v: 1, fields: FIELDS.map(function (f) { return f[0]; }), dict: dict, rows: rows,
+      meta: { fichier: file.name || '', importeLe: new Date().toISOString(), lignesData: lines - 1 }
+    };
+  }
+  G.parseExport = parseExport;
+  G.EXPORT_FIELDS = FIELDS;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var EXCLU = 'Annulée', PAGE = 50, PART_SIZE = 800000, LINE = 2000;
+  var $ = function (id) { return document.getElementById(id); };
+  var state = { items: [], shown: PAGE, local: false };
+  var NOMS = {'01':'Ain','02':'Aisne','03':'Allier','04':'Alpes-de-Haute-Provence','05':'Hautes-Alpes','06':'Alpes-Maritimes','07':'Ardèche','08':'Ardennes','09':'Ariège','10':'Aube','11':'Aude','12':'Aveyron','13':'Bouches-du-Rhône','14':'Calvados','15':'Cantal','16':'Charente','17':'Charente-Maritime','18':'Cher','19':'Corrèze','2A':'Corse-du-Sud','2B':'Haute-Corse','21':"Côte-d'Or",'22':"Côtes-d'Armor",'23':'Creuse','24':'Dordogne','25':'Doubs','26':'Drôme','27':'Eure','28':'Eure-et-Loir','29':'Finistère','30':'Gard','31':'Haute-Garonne','32':'Gers','33':'Gironde','34':'Hérault','35':'Ille-et-Vilaine','36':'Indre','37':'Indre-et-Loire','38':'Isère','39':'Jura','40':'Landes','41':'Loir-et-Cher','42':'Loire','43':'Haute-Loire','44':'Loire-Atlantique','45':'Loiret','46':'Lot','47':'Lot-et-Garonne','48':'Lozère','49':'Maine-et-Loire','50':'Manche','51':'Marne','52':'Haute-Marne','53':'Mayenne','54':'Meurthe-et-Moselle','55':'Meuse','56':'Morbihan','57':'Moselle','58':'Nièvre','59':'Nord','60':'Oise','61':'Orne','62':'Pas-de-Calais','63':'Puy-de-Dôme','64':'Pyrénées-Atlantiques','65':'Hautes-Pyrénées','66':'Pyrénées-Orientales','67':'Bas-Rhin','68':'Haut-Rhin','69':'Rhône','70':'Haute-Saône','71':'Saône-et-Loire','72':'Sarthe','73':'Savoie','74':'Haute-Savoie','75':'Paris','76':'Seine-Maritime','77':'Seine-et-Marne','78':'Yvelines','79':'Deux-Sèvres','80':'Somme','81':'Tarn','82':'Tarn-et-Garonne','83':'Var','84':'Vaucluse','85':'Vendée','86':'Vienne','87':'Haute-Vienne','88':'Vosges','89':'Yonne','90':'Territoire de Belfort','91':'Essonne','92':'Hauts-de-Seine','93':'Seine-Saint-Denis','94':'Val-de-Marne','95':"Val-d'Oise",'971':'Guadeloupe','972':'Martinique','973':'Guyane','974':'La Réunion','976':'Mayotte','98':'Monaco'};
+
+  function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); }
+  function todaySerial() { var n = new Date(); return Math.round(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()) / 864e5) + 25569; }
+  function serialToISO(s) { return new Date((s - 25569) * 864e5).toISOString().slice(0, 10); }
+  function isoToSerial(v) { if (!v) return null; var p = v.split('-'); return Math.round(Date.UTC(+p[0], +p[1] - 1, +p[2]) / 864e5) + 25569; }
+  var fmtD = new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+  var fmtS = new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric' });
+  function dLong(s) { return s == null ? '—' : fmtD.format(new Date((s - 25569) * 864e5)); }
+  function dShort(s) { return s == null ? '—' : fmtS.format(new Date((s - 25569) * 864e5)); }
+  var nf = new Intl.NumberFormat('fr-FR');
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  // Zone : celle de l'export si elle commence par un code de département, sinon le département du code postal
+  function zoneKey(zone, cp) {
+    var z = (zone || '').trim(), m = z.match(/^(\d{2,3}|2A|2B)-/i);
+    if (m) return m[1].toUpperCase();
+    var c = String(cp || '').replace(/[\s,]/g, '');
+    if (c.length >= 2) {
+      if (c.slice(0, 2) === '97') return c.slice(0, 3);
+      if (c.slice(0, 2) === '20') return (parseInt(c.slice(0, 3), 10) || 0) < 202 ? '2A' : '2B';
+      return c.slice(0, 2);
+    }
+    return z;
+  }
+
+  function prepare(data) {
+    var F = data.fields, D = data.dict, ix = {}, labels = {};
+    F.forEach(function (f, i) { ix[f] = i; });
+    var out = [];
+    data.rows.forEach(function (r) {
+      var statut = D[r[ix.statut]];
+      if (statut === EXCLU) return;
+      var form = D[r[ix.form]], intit = D[r[ix.intit]], max = r[ix.max] || 0, insc = r[ix.insc] || 0, zone = D[r[ix.zone]];
+      var zk = zoneKey(zone, r[ix.cp]);
+      if (zone && /^(\d{2,3}|2A|2B)-/i.test(zone) && !labels[zk]) labels[zk] = zone;
+      out.push({
+        sess: r[ix.sess], statut: statut, debut: r[ix.debut], fin: r[ix.fin], ref: r[ix.ref],
+        form: form, intit: norm(intit) === norm(form) ? '' : intit, insc: insc, max: max, min: r[ix.min] || 0,
+        lieu: D[r[ix.lieu]], cp: r[ix.cp], zone: zone, zk: zk, jours: r[ix.jours], domaine: D[r[ix.domaine]], etab: D[r[ix.etab]],
+        cat: ix.cat != null ? D[r[ix.cat]] : '',
+        places: Math.max(0, max - insc),
+        hay: norm([form, intit, r[ix.sess], r[ix.ref]].join(' ')), sessN: norm(r[ix.sess]), refN: norm(r[ix.ref])
+      });
+    });
+    return { items: out, labels: labels };
+  }
+
+  function zoneLabel(k, labels) { return labels[k] || (NOMS[k] ? k + '-' + NOMS[k] : k); }
+  function fillSelect(sel, entries, allLabel) {
+    var cur = sel.value;
+    sel.innerHTML = '<option value="">' + allLabel + '</option>' + entries.map(function (e) {
+      return '<option value="' + esc(e[0]) + '">' + esc(e[1]) + ' (' + e[2] + ')</option>';
+    }).join('');
+    if (cur && entries.some(function (e) { return e[0] === cur; })) sel.value = cur;
+  }
+  function buildMenus(labels) {
+    var today = todaySerial(), zc = {}, cc = {};
+    state.items.forEach(function (it) {
+      if (it.debut == null || it.debut < today) return;
+      if (it.zk) zc[it.zk] = (zc[it.zk] || 0) + 1;
+      if (it.cat) cc[it.cat] = (cc[it.cat] || 0) + 1;
+    });
+    var z = Object.keys(zc).map(function (k) { return [k, zoneLabel(k, labels), zc[k]]; });
+    z.sort(function (a, b) { return a[1].localeCompare(b[1], 'fr', { numeric: true }); });
+    var c = Object.keys(cc).map(function (k) { return [k, k, cc[k]]; });
+    c.sort(function (a, b) { return a[1].localeCompare(b[1], 'fr'); });
+    fillSelect($('zone'), z, 'Toutes les zones');
+    fillSelect($('cat'), c, 'Toutes les catégories');
+  }
+
+  function matches(it, q, words, digits) {
+    if (!q) return true;
+    if (digits) {
+      if (it.refN === q || (/^\d+$/.test(it.refN) && +it.refN === +q)) return true;
+      if (it.sessN === 's-' + q || it.sessN === 'cfa-' + q) return true;
+      if (/^0*$/.test(q)) return false;
+    }
+    if (it.sessN === q || it.refN === q) return true;
+    for (var i = 0; i < words.length; i++) if (it.hay.indexOf(words[i]) < 0) return false;
+    return true;
+  }
+  function filtered() {
+    var q = norm($('q').value), words = q.split(/\s+/).filter(Boolean), digits = /^\d+$/.test(q);
+    var from = isoToSerial($('from').value), to = isoToSerial($('to').value), only = $('onlyPlaces').checked;
+    var zone = $('zone').value, cat = $('cat').value;
+    var res = state.items.filter(function (it) {
+      if (from != null && (it.debut == null || it.debut < from)) return false;
+      if (to != null && (it.debut == null || it.debut > to)) return false;
+      if (only && it.places <= 0) return false;
+      if (zone && it.zk !== zone) return false;
+      if (cat && it.cat !== cat) return false;
+      return matches(it, q, words, digits);
+    });
+    if ($('sort').value === 'places') res.sort(function (a, b) { return b.places - a.places || (a.debut - b.debut); });
+    else res.sort(function (a, b) { return (a.debut - b.debut) || a.sess.localeCompare(b.sess); });
+    return res;
+  }
+
+  function badge(p) {
+    if (p <= 0) return '<div class="badge full"><span class="n">COMPLET</span></div>';
+    return '<div class="badge ' + (p >= 3 ? 'ok' : 'warn') + '"><span class="n">' + p + '</span><span class="u">' + (p > 1 ? 'places' : 'place') + '</span></div>';
+  }
+  function rowHTML(it) {
+    var fill = it.max > 0 ? Math.min(100, Math.round(100 * it.insc / it.max)) : 0;
+    var dates = it.fin != null && it.fin !== it.debut ? 'au ' + dShort(it.fin) : '';
+    var jours = it.jours ? (nf.format(it.jours) + (it.jours > 1 ? ' jours' : ' jour')) : '';
+    var loc = [it.cp, it.zone && it.zone.replace(/^\d+[AB]?-/, '')].filter(Boolean).join(' · ');
+    return '<article class="row">' + badge(it.places) +
+      '<div class="main"><div class="title">' + esc(it.form || '(sans intitulé)') + '</div>' +
+      (it.intit ? '<div class="sub">' + esc(it.intit) + '</div>' : '') +
+      '<div class="meta"><code>' + esc(it.sess) + '</code><span>Réf. ' + esc(it.ref || '—') + '</span>' +
+      '<span class="chip' + (it.statut === 'En cours de qualif.' ? ' qualif' : '') + '">' + esc(it.statut) + '</span>' +
+      (it.domaine ? '<span>' + esc(it.domaine.replace(/^\d+\.\s*/, '')) + '</span>' : '') +
+      (it.cat ? '<span class="chip">' + esc(it.cat) + '</span>' : '') + '</div></div>' +
+      '<div class="when"><span class="d">' + dLong(it.debut) + '</span><span class="s">' + [dates, jours].filter(Boolean).join(' · ') + '</span>' +
+      '<span class="s">' + it.insc + ' inscrit' + (it.insc > 1 ? 's' : '') + ' / ' + it.max + ' max · min ' + it.min + '</span>' +
+      '<div class="fillbar" aria-hidden="true"><span style="width:' + fill + '%"></span></div></div>' +
+      '<div class="where"><span class="l">' + esc(it.lieu || 'Lieu non précisé') + '</span>' + (loc ? '<span class="s">' + esc(loc) + '</span>' : '') +
+      (it.etab ? '<span class="s">' + esc(it.etab) + '</span>' : '') + '</div></article>';
+  }
+
+  function render(resetPage) {
+    if (!state.items.length) return;
+    if (resetPage) state.shown = PAGE;
+    var res = filtered(), places = 0, withP = 0, next = null;
+    res.forEach(function (it) { places += it.places; if (it.places > 0) { withP++; if (next == null || it.debut < next) next = it.debut; } });
+    $('kSessions').textContent = nf.format(res.length);
+    $('kPlaces').textContent = nf.format(places);
+    $('kWith').textContent = nf.format(withP);
+    $('kNext').textContent = next == null ? '—' : dShort(next);
+    $('count').textContent = res.length ? (Math.min(state.shown, res.length) + ' sur ' + nf.format(res.length) + ' session' + (res.length > 1 ? 's' : '')) : '';
+    if (!res.length) {
+      $('list').innerHTML = '<div class="empty">Aucune session ne correspond. Essayez un autre mot, élargissez les dates, changez de zone ou de catégorie, ou désactivez « Uniquement avec places disponibles ».</div>';
+      $('btnMore').hidden = true; return;
+    }
+    $('list').innerHTML = res.slice(0, state.shown).map(rowHTML).join('');
+    var left = res.length - state.shown;
+    $('btnMore').hidden = left <= 0;
+    $('btnMore').textContent = 'Afficher ' + Math.min(PAGE, left) + ' de plus';
+  }
+
+  function setData(data, local) {
+    var p = prepare(data);
+    state.items = p.items; state.local = local;
+    var m = data.meta || {}, when = m.importeLe ? new Date(m.importeLe).toLocaleDateString('fr-FR') : '?';
+    $('fresh').innerHTML = 'Export importé le <b>' + esc(when) + '</b> · <b>' + nf.format(p.items.length) + '</b> sessions non annulées' +
+      (local ? ' · <b>aperçu de votre import (pas encore en ligne)</b>' : '');
+    buildMenus(p.labels);
+    render(true);
+  }
+
+  // Chargement des fichiers data/manifest.js puis data/part-N.js
+  function loadScript(src) {
+    return new Promise(function (ok, ko) { var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = function () { ko(new Error(src)); }; document.head.appendChild(s); });
+  }
+  async function boot() {
+    try {
+      await loadScript('data/manifest.js?t=' + Date.now());
+      var m = window.SESSIONS_MANIFEST;
+      window.SESSIONS_PARTS = [];
+      for (var i = 1; i <= m.parts; i++) await loadScript('data/part-' + i + '.js?v=' + encodeURIComponent(m.version));
+      var data = JSON.parse(window.SESSIONS_PARTS.join(''));
+      window.SESSIONS_PARTS = null;
+      if (!state.local) setData(data, false);
+    } catch (e) {
+      if (!state.local) $('fresh').textContent = 'Les données n\'ont pas pu être chargées (dossier data manquant ou incomplet). Importez l\'export du mois.';
+    }
+  }
+
+  // Fichiers à remettre sur GitHub
+  function buildFiles(data) {
+    var json = JSON.stringify(data), version = data.meta.importeLe, parts = [];
+    for (var i = 0; i < json.length; i += PART_SIZE) parts.push(json.slice(i, i + PART_SIZE));
+    var files = parts.map(function (chunk, n) {
+      var lines = [];
+      for (var j = 0; j < chunk.length; j += LINE) lines.push(JSON.stringify(chunk.slice(j, j + LINE)));
+      return { name: 'part-' + (n + 1) + '.js', text: 'window.SESSIONS_PARTS.push([\n' + lines.join(',\n') + '\n].join(""));\n' };
+    });
+    files.unshift({ name: 'manifest.js', text: 'window.SESSIONS_MANIFEST = ' + JSON.stringify({ parts: parts.length, version: version, importeLe: version, fichier: data.meta.fichier, sessions: data.rows.length }) + ';\n' });
+    return files;
+  }
+  function download(f) {
+    var url = URL.createObjectURL(new Blob([f.text], { type: 'text/javascript' })), a = document.createElement('a');
+    a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+  }
+  var files = [];
+  function showFiles() {
+    $('dlList').innerHTML = files.map(function (f, i) {
+      return '<button class="btn" type="button" data-i="' + i + '">' + esc(f.name) + ' <span class="hint">' + nf.format(Math.ceil(f.text.length / 1024)) + ' Ko</span></button>';
+    }).join('');
+    $('publish').hidden = false;
+  }
+  $('dlList').addEventListener('click', function (e) { var b = e.target.closest('button[data-i]'); if (b) download(files[+b.dataset.i]); });
+  $('btnAll').addEventListener('click', function () { files.forEach(function (f, i) { setTimeout(function () { download(f); }, i * 400); }); });
+
+  // Événements
+  var t = null;
+  $('q').addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { render(true); }, 120); });
+  ['from', 'to', 'onlyPlaces', 'sort', 'zone', 'cat'].forEach(function (id) { $(id).addEventListener('change', function () { render(true); }); });
+  $('btnMore').addEventListener('click', function () { state.shown += PAGE; render(false); });
+  $('btnReset').addEventListener('click', function () {
+    $('q').value = ''; $('from').value = serialToISO(todaySerial()); $('to').value = ''; $('onlyPlaces').checked = true;
+    $('sort').value = 'date'; $('zone').value = ''; $('cat').value = ''; render(true);
+  });
+  $('from').value = serialToISO(todaySerial());
+
+  function msg(text, cls) { var m = $('msg'); m.textContent = text; m.className = 'msg' + (cls ? ' ' + cls : ''); }
+  $('btnImport').addEventListener('click', function () { $('panel').hidden = false; $('panel').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  $('btnClose').addEventListener('click', function () { $('panel').hidden = true; });
+  var drop = $('drop');
+  ['dragenter', 'dragover'].forEach(function (e) { drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (e) { drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (ev) { var f = ev.dataTransfer && ev.dataTransfer.files[0]; if (f) doImport(f); });
+  $('file').addEventListener('change', function () { var f = this.files[0]; if (f) doImport(f); this.value = ''; });
+
+  var busy = false;
+  async function doImport(file) {
+    if (busy) return;
+    if (typeof DecompressionStream === 'undefined') { msg('Ce navigateur est trop ancien pour lire le fichier. Utilisez une version récente de Chrome, Edge ou Firefox.', 'err'); return; }
+    busy = true; $('progWrap').hidden = false; $('prog').style.width = '0%'; $('publish').hidden = true; msg('Lecture de ' + file.name + '…');
+    try {
+      var data = await window.parseExport(file, function (p) { $('prog').style.width = Math.round(p.ratio * 100) + '%'; msg(p.step + '… ' + Math.round(p.ratio * 100) + ' %'); });
+      if (!data.rows.length) throw new Error('Aucune session trouvée dans l\'onglet Data.');
+      setData(data, true);
+      files = buildFiles(data); showFiles();
+      $('prog').style.width = '100%';
+      msg(nf.format(data.rows.length) + ' sessions lues. Vous voyez déjà le résultat ci-dessous ; pour le mettre en ligne, remplacez les ' + files.length + ' fichiers du dossier data sur GitHub.', 'ok');
+    } catch (e) {
+      msg((e && e.message) || 'Le fichier n\'a pas pu être lu.', 'err');
+    } finally { busy = false; }
+  }
+
+  boot();
+})();
+
+</script>
+</body>
+</html>
